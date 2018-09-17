@@ -7,6 +7,7 @@ import os
 from django.conf import settings
 from django.test import TestCase
 from paver.easy import call_task
+from mock import patch
 
 from pipeline_mako import compressed_css, compressed_js, render_require_js_path_overrides
 
@@ -41,38 +42,49 @@ class RequireJSPathOverridesTest(TestCase):
         self.assertEqual(map(str.strip, result.splitlines()), self.OVERRIDES_JS)
 
 
+@skipUnless(settings.ROOT_URLCONF == 'lms.urls', 'Test only valid in LMS')
 @ddt.ddt
 class PipelineRenderTest(TestCase):
     """Test individual pipeline rendering functions. """
     shard = 7
 
-    @classmethod
-    def setUpClass(cls):
-        """
-        Create static assets once for all pipeline render tests.
-        """
-        super(PipelineRenderTest, cls).setUpClass()
-        # Ensure that the npm requirements are always installed before updating static assets.
-        prereq_install_value_orig = os.environ.get('NO_PREREQ_INSTALL')
-        os.environ['NO_PREREQ_INSTALL'] = 'False'
-        try:
-            call_task('pavelib.prereqs.install_node_prereqs')
-        except:
-            raise
-        finally:
-            if prereq_install_value_orig is None:
-                del os.environ['NO_PREREQ_INSTALL']
-            else:
-                os.environ['NO_PREREQ_INSTALL'] = prereq_install_value_orig
-        # Update all static assets.
-        call_task('pavelib.assets.update_assets', args=('lms', '--settings=test', '--themes=no'))
+    pipeline_css_return_value = {
+        'style-main-v1': {
+            'source_filenames': ['css/lms-main-v1.css'],
+            'output_filename': 'css/lms-main-v1.css'
+        }
+    }
 
-    @skipUnless(settings.ROOT_URLCONF == 'lms.urls', 'Test only valid in LMS')
+    pipeline_js_return_value = {
+      'base_application':
+      {
+        'source_filenames': [
+          'js/src/utility.js',
+          'js/src/logger.js',
+          'js/user_dropdown_v1.js',
+          'js/dialog_tab_controls.js',
+          'js/src/string_utils.js',
+          'js/form.ext.js',
+          'js/src/ie_shim.js',
+          'js/src/accessibility_tools.js',
+          'js/toggle_login_modal.js',
+          'js/src/lang_edx.js'
+        ],
+        'output_filename': 'js/lms-base-application.js'
+      }
+    }
+
+    @staticmethod
+    def mock_staticfiles_lookup(path):
+        return '/static/' + path
+
+    @patch.dict(settings.PIPELINE_CSS, pipeline_css_return_value)
+    @patch('static_replace.try_staticfiles_lookup', side_effect=mock_staticfiles_lookup)
     @ddt.data(
         (True,),
         (False,),
     )
-    def test_compressed_css(self, pipeline_enabled):
+    def test_compressed_css(self, pipeline_enabled, mock_staticfiles_lookup):
         """
         Verify the behavior of compressed_css, with the pipeline
         both enabled and disabled.
@@ -86,8 +98,9 @@ class PipelineRenderTest(TestCase):
             css_include = compressed_css('style-main-v1', raw=True)
             self.assertIn(u'lms-main-v1.css?raw', css_include)
 
-    @skipUnless(settings.ROOT_URLCONF == 'lms.urls', 'Test only valid in LMS')
-    def test_compressed_js(self):
+    @patch.dict(settings.PIPELINE_JS, pipeline_js_return_value)
+    @patch('static_replace.try_staticfiles_lookup', side_effect=mock_staticfiles_lookup)
+    def test_compressed_js(self, mock_staticfiles_lookup):
         """
         Verify the behavior of compressed_css, with the pipeline
         both enabled and disabled.
