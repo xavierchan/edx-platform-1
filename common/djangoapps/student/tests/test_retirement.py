@@ -268,8 +268,8 @@ class TestRegisterRetiredUsername(TestCase):
         obj = json.loads(response.content)
 
         username_msg = obj['username'][0]['user_message']
-        assert username_msg.startswith('An account with the Public Username')
-        assert username_msg.endswith('already exists.')
+        assert username_msg.startswith('It looks like ')
+        assert username_msg.endswith('different username.')
         assert orig_username in username_msg
 
     def test_retired_username(self):
