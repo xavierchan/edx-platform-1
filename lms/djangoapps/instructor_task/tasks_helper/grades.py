@@ -297,9 +297,26 @@ class CourseGradeReport(object):
             args = [iter(iterable)] * chunk_size
             return izip_longest(*args, fillvalue=fillvalue)
 
-        users = CourseEnrollment.objects.users_enrolled_in(context.course_id, include_inactive=True)
-        users = users.select_related('profile')
-        return grouper(users)
+        def users_for_course(course_id):
+            filter_kwargs = {
+                'courseenrollment__course_id': course_id,
+                'courseenrollment__is_active': True,
+            }
+            user_ids_list = get_user_model().objects.filter(**filter_kwargs).values_list('id', flat=True).order_by('id')
+            user_chunks = grouper(user_ids_list)
+            for user_ids in user_chunks:
+                user_ids = filter(lambda user_id: user_id is not None, user_ids)
+                min_id = min(user_ids)
+                max_id = max(user_ids)
+                users = get_user_model().objects.filter(
+                    id__gte=min_id,
+                    id__lte=max_id,
+                    **filter_kwargs
+                ).select_related('profile')
+                yield users
+
+        users = users_for_course(context.course_id)
+        return users
 
     def _user_grades(self, course_grade, context):
         """
