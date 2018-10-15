@@ -10,7 +10,7 @@ from django.core.urlresolvers import reverse
   <script type="text/javascript" src="${static.url('js/vendor/flot/jquery.flot.js')}"></script>
   <script type="text/javascript" src="${static.url('js/vendor/flot/jquery.flot.stack.js')}"></script>
   <script type="text/javascript" src="${static.url('js/vendor/flot/jquery.flot.symbol.js')}"></script>
-  <script type="text/javascript" src="${static.url('common/js/vendor/jquery.dataTables.min.js')}"></script>
+  <script type="text/javascript" src="${static.url('common/js/vendor/jquery.dataTables.js')}"></script>
   <script type="text/javascript" src="${static.url('common/js/vendor/dataTables.fixedColumns.min.js')}"></script>
   <script type="text/javascript" src="${static.url('js/jquery.masters_gradebook.js')}"></script>
   <script type="text/javascript" src="${static.url('js/masters_gradebook.js')}"></script>
@@ -33,7 +33,7 @@ from django.core.urlresolvers import reverse
 
 <section class="container">
   <div class="gradebook-wrapper">
-    <section id="gradebook-main-content" class="gradebook-content" data-course-id="${course_id.to_deprecated_string()}" data-number-of-students="${number_of_students}" data-static-path="${static.url('js/')}" data-staff-username="${user}">
+    <section id="gradebook-main-content" class="gradebook-content" data-course-id="${course_id.to_deprecated_string()}" data-number-of-students="${number_of_students}" data-static-path="${static.url('')}" data-staff-username="${user}">
       <h1>${_("Gradebook")}</h1>
 
       <div id="error-message" class="error hidden"></div>

@@ -54,7 +54,7 @@ NPM_INSTALLED_LIBRARIES = [
     'backbone.paginator/lib/backbone.paginator.js',
     'backbone/backbone.js',
     'bootstrap/dist/js/bootstrap.bundle.js',
-    'datatables/media/js/jquery.dataTables.min.js',
+    'datatables.net/js/jquery.dataTables.js',
     'datatables/media/css/jquery.dataTables.min.css',
     'datatables.net-fixedcolumns/js/dataTables.fixedColumns.min.js',
     'hls.js/dist/hls.js',

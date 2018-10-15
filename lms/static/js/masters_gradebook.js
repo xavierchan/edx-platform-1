@@ -1,5 +1,5 @@
 function _templateLoader(templateName, staticPath, callback, errorCallback) {
-    var templateURL = staticPath + '_templates/' + templateName + '.html';
+    var templateURL = staticPath + '/../common/templates/gradebook/' + templateName + '.html';
 
     $.ajax({
         url: templateURL,
@@ -193,7 +193,7 @@ $(document).ready(function() {
                        .toggleClass('hidden', studentsDataLength <= tableLength);
             });
 
-            return $table.DataTable(options);
+            return $table.DataTable();
         },
         onFinishedFetchingGrades = function(response) {
             isFetchingComplete = true;
@@ -215,7 +215,7 @@ $(document).ready(function() {
             _templateLoader('_grading_policies', staticPath, function(template) {
                 var tpl = _.template(template);
                 $('#grading-policy').append(tpl({
-                    gradingPolicies: studentsData[0].grade_summary.grade_breakdown
+                    gradingPolicies: Object.keys(studentsData[0].aggregates)
                 }), displayError);
             }, displayError);
         },
@@ -238,7 +238,7 @@ $(document).ready(function() {
         },
         startFetchingGrades = function() {
             $gradebookNotification.toggleClass('hidden');
-            fetchGrades('api/grades/v1/gradebook/' + courseID + '/?username=audit');
+            fetchGrades('api/grades/v1/gradebook/' + courseID + '/');
         };
 
     $gradingPolicyFilter.change(function() { filterGradebook(); });
@@ -250,7 +250,7 @@ $(document).ready(function() {
         var tpl = _.template(template);
 
         gradeBookData.map(function(userData){
-            var gradeData = userData.grade_summary.section_breakdown.filter(function(sectionData){
+            var gradeData = userData.section_breakdown.filter(function(sectionData){
                 return (sectionData.module_id === blockID);
             });
 
