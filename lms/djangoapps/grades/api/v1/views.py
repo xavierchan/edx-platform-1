@@ -20,8 +20,9 @@ from enrollment import data as enrollment_data
 from lms.djangoapps.grades.api.serializers import StudentGradebookEntrySerializer
 from lms.djangoapps.grades.config.waffle import waffle_flags, WRITABLE_GRADEBOOK
 from lms.djangoapps.grades.course_grade_factory import CourseGradeFactory
+from lms.djangoapps.grades.models import PersistentSubsectionGrade, PersistentSubsectionGradeOverride
 from opaque_keys import InvalidKeyError
-from opaque_keys.edx.keys import CourseKey
+from opaque_keys.edx.keys import CourseKey, UsageKey
 from openedx.core.djangoapps.content.course_overviews.models import CourseOverview
 from openedx.core.lib.api.authentication import OAuth2AuthenticationAllowInactiveUser
 from openedx.core.lib.api.view_utils import DeveloperErrorViewMixin
@@ -564,3 +565,41 @@ class GradebookView(GradeViewMixin, GenericAPIView):
                     entries.append(self._gradebook_entry(user, course, course_grade))
             serializer = StudentGradebookEntrySerializer(entries, many=True)
             return self.get_paginated_response(serializer.data)
+
+
+class GradebookBulkUpdateView(GradeViewMixin, GenericAPIView):
+    @verify_course_exists
+    @verify_writable_gradebook_enabled
+    def post(self, request, course_id):
+        """
+        Creates `PersistentSubsectionGradeOverrides` for user_id/course_key/usage_key
+        specified in the request data.
+        """
+        course_key = get_course_key(request, course_id)
+        course = get_course_with_access(request.user, 'staff', course_key, depth=None)
+
+        for user_data in request.data:
+            try:
+                user = USER_MODEL.objects.get(user_data['user_id'])
+                usage_key = UsageKey.from_string(user_data['usage_id'])
+                grade_override_data = user_data['grade']
+                grade = PersistentSubsectionGrade.objects.get(
+                    user_id=user.id,
+                    course_id=course_key,
+                    usage_key=usage_key
+                )
+                override = PersistentSubsectionGradeOverride.objects.create(
+                    grade=grade,
+                    **grade_override_data
+                )
+            except USER_MODEL.DoesNotExist:
+                # TODO: decide what to do here.
+                pass
+            except InvalidKeyError:
+                # TODO
+                pass
+            except PersistentSubsectionGrade.DoesNotExist:
+                # TODO: what do we do here? is it reasonable to expect that an instructor
+                # can manually change a student's grade in a subsection that the student
+                # has not yet attempted?
+                pass
