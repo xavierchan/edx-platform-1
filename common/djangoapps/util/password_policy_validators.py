@@ -14,7 +14,6 @@ from django.contrib.auth.password_validation import (
 )
 from django.core.exceptions import ValidationError
 from django.utils.translation import ugettext as _, ungettext
-from openedx.core.djangoapps.user_api.config.waffle import PASSWORD_UNICODE_NORMALIZE_FLAG
 from six import text_type
 
 log = logging.getLogger(__name__)
@@ -125,8 +124,7 @@ def validate_password(password, user=None):
             # no reason to get into weeds
             raise ValidationError([_('Invalid password.')])
 
-    if PASSWORD_UNICODE_NORMALIZE_FLAG.is_enabled():
-        password = normalize_password(password)
+    password = normalize_password(password)
     django_validate_password(password, user)
 
 
