@@ -1,5 +1,5 @@
 function _templateLoader(templateName, staticPath, callback, errorCallback) {
-    var templateURL = staticPath + '/_templates/' + templateName + '.html';
+    var templateURL = staticPath + '_templates/' + templateName + '.html';
 
     $.ajax({
         url: templateURL,
@@ -238,7 +238,7 @@ $(document).ready(function() {
         },
         startFetchingGrades = function() {
             $gradebookNotification.toggleClass('hidden');
-            fetchGrades('/api/courses/' + courseID + '/gradebook?page_size=10');
+            fetchGrades('api/grades/v1/gradebook/' + courseID + '/?username=audit');
         };
 
     $gradingPolicyFilter.change(function() { filterGradebook(); });

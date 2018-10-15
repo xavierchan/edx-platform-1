@@ -849,7 +849,7 @@ def is_staff_or_instructor_on_course(user, course):
     return False
 
 
-def get_enrolled_non_staff_students(course, course_key):
+def get_students(course, course_key):
     students = User.objects.filter(
         courseenrollment__course_id=course_key,
         courseenrollment__is_active=1

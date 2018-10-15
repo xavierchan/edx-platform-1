@@ -10,8 +10,8 @@ from django.db import transaction
 from django.views.decorators.cache import cache_control
 from opaque_keys.edx.keys import CourseKey
 
-from courseware.access import get_enrolled_non_staff_students
-from courseware.courses import get_course_with_access
+from lms.djangoapps.courseware.access import get_students
+from lms.djangoapps.courseware.courses import get_course_with_access
 from edxmako.shortcuts import render_to_response
 from lms.djangoapps.grades.course_grade_factory import CourseGradeFactory
 from lms.djangoapps.instructor.views.api import require_level
@@ -107,7 +107,7 @@ def spoc_masters_gradebook(request, course_id):
     """
     course_key = CourseKey.from_string(course_id)
     course = get_course_with_access(request.user, 'load', course_key)
-    enrolled_students = get_enrolled_non_staff_students(course, course_key)
+    enrolled_students = get_students(course, course_key)
 
     course_grade = CourseGradeFactory().read(request.user, course)
     courseware_summary = course_grade.chapter_grades.values()
