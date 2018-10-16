@@ -488,6 +488,57 @@ class SuccessFactorsIntegrationTest(SamlIntegrationTestUtilities, IntegrationTes
         )
         self._test_register(country=expected_country)
 
+    def test_register_sapsf_with_value_default(self):
+        """
+        Configure the provider such that it can talk to a mocked-out version of the SAP SuccessFactors
+        API, and ensure that the data it gets that way gets passed to the registration form.
+
+        Check that value mappings overrides work in cases where we override a value other than
+        what we're looking for, and when an empty override is provided it should use the default value
+        provided by the configuration.
+        """
+        # Mock the call to the SAP SuccessFactors OData user endpoint
+        ODATA_USER_URL = (
+            'http://api.successfactors.com/odata/v2/User(userId=\'myself\')'
+            '?$select=username,firstName,country,lastName,defaultFullName,email'
+        )
+
+        def user_callback(request, _uri, headers):
+            auth_header = request.headers.get('Authorization')
+            self.assertEqual(auth_header, 'Bearer faketoken')
+            return (
+                200,
+                headers,
+                json.dumps({
+                    'd': {
+                        'username': 'jsmith',
+                        'firstName': 'John',
+                        'lastName': 'Smith',
+                        'defaultFullName': 'John Smith',
+                        'country': 'Australia'
+                    }
+                })
+            )
+
+        httpretty.register_uri(httpretty.GET, ODATA_USER_URL, content_type='application/json', body=user_callback)
+
+        provider_settings = {
+            'sapsf_oauth_root_url': 'http://successfactors.com/oauth/',
+            'sapsf_private_key': 'fake_private_key_here',
+            'odata_api_root_url': 'http://api.successfactors.com/odata/v2/',
+            'odata_company_id': 'NCC1701D',
+            'odata_client_id': 'TatVotSEiCMteSNWtSOnLanCtBGwNhGB',
+        }
+
+        self._configure_testshib_provider(
+            identity_provider_type='sap_success_factors',
+            metadata_source=TESTSHIB_METADATA_URL,
+            other_settings=json.dumps(provider_settings),
+            default_email='default@testshib.org'
+        )
+        self.USER_EMAIL = 'default@testshib.org'
+        self._test_register()
+
     @patch.dict('django.conf.settings.REGISTRATION_EXTRA_FIELDS', country='optional')
     def test_register_sapsf_metadata_present_override_relevant_value(self):
         """
