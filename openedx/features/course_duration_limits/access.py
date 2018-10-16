@@ -1,4 +1,4 @@
-from datetime import timedelta
+from datetime import date, timedelta
 
 from django.apps import apps
 from django.utils import timezone
@@ -7,7 +7,12 @@ from django.utils.translation import ugettext as _
 
 from lms.djangoapps.courseware.access_response import AccessError
 from lms.djangoapps.courseware.access_utils import ACCESS_GRANTED
+from lms.djangoapps.courseware.date_summary import verified_upgrade_deadline_link
 
+
+from openedx.core.djangoapps.util.user_messages import PageLevelMessages
+
+from openedx.core.djangolib.markup import HTML, Text
 
 class AuditExpiredError(AccessError):
     """
@@ -39,3 +44,21 @@ def check_course_expired(user, course):
         return AuditExpiredError(user, course, end_date)
 
     return ACCESS_GRANTED
+
+def get_course_expiration_date(user, course):
+    # Placeholder function
+    return date(2018,11,1)
+
+def register_course_expired_message(request, course):
+    expiration_date = get_course_expiration_date(request.user,course)
+    if expiration_date:
+        upgrade_message = _('Your access to this course expires on {expire_date}. \
+                <a href="{upgrade_link}">Upgrade now</a> for unlimited access.')
+        PageLevelMessages.register_info_message(
+            request,
+            HTML(upgrade_message).format(
+                expire_date=expiration_date.strftime('%b %-d'),
+                upgrade_link=verified_upgrade_deadline_link(user=request.user, course=course)
+            )
+        )
+
