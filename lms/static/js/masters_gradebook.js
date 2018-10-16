@@ -202,6 +202,10 @@ $(document).ready(function() {
                 $filtersWrapper.toggleClass('hidden');
             $gradebookNotification.toggleClass('hidden');
             gradeBookData = gradeBookData.concat(response.results);
+            gradeBookData = gradeBookData.map(data => {
+                data.section_breakdown = data.section_breakdown.filter(b => b.chapter_name !== 'holding section')
+                return data;
+            });
             renderGradebook(gradeBookData);
         },
         onPageFetched = function(response) {
