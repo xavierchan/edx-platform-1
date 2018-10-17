@@ -1,5 +1,5 @@
 function _templateLoader(templateName, staticPath, callback, errorCallback) {
-    var templateURL = staticPath + '/../common/templates/gradebook/' + templateName + '.html';
+    var templateURL = staticPath + '/common/templates/gradebook/' + templateName + '.html';
 
     $.ajax({
         url: templateURL,
