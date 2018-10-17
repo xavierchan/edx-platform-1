@@ -54,8 +54,9 @@ NPM_INSTALLED_LIBRARIES = [
     'backbone.paginator/lib/backbone.paginator.js',
     'backbone/backbone.js',
     'bootstrap/dist/js/bootstrap.bundle.js',
-    'datatables.net/js/jquery.dataTables.js',
     'datatables/media/css/jquery.dataTables.min.css',
+    'datatables/media/images',
+    'datatables.net/js/jquery.dataTables.js',
     'datatables.net-fixedcolumns/js/dataTables.fixedColumns.min.js',
     'hls.js/dist/hls.js',
     'jquery-migrate/dist/jquery-migrate.js',
@@ -602,7 +603,7 @@ def process_npm_assets():
         else:
             library_path = 'node_modules/{library}'.format(library=library)
 
-        if library.endswith('.css') or library.endswith('.css.map'):
+        if library.endswith('.css') or library.endswith('.css.map') or library.endswith('/images'):
             vendor_dir = NPM_CSS_VENDOR_DIRECTORY
         else:
             vendor_dir = NPM_JS_VENDOR_DIRECTORY
