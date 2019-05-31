@@ -1,3 +1,4 @@
+<%page expression_filter="h" />
 <%namespace name='static' file='../static_content.html'/>
 <%!
 from django.utils.translation import ugettext as _
@@ -7,7 +8,7 @@ from courseware.courses import get_course_about_section
 from django.conf import settings
 from six import text_type
 from edxmako.shortcuts import marketing_link
-from openedx.core.djangolib.markup import HTML
+from openedx.core.djangolib.markup import HTML, Text
 from openedx.core.lib.courses import course_image_url
 from six import string_types
 %>
@@ -16,10 +17,9 @@ from six import string_types
 <%block name="headextra">
   ## OG (Open Graph) title and description added below to give social media info to display
   ## (https://developers.facebook.com/docs/opengraph/howtos/maximizing-distribution-media-content#tags)
-  <meta property="og:title" content="${course.display_name_with_default_escaped}" />
+  <meta property="og:title" content="${course.display_name_with_default}" />
   <meta property="og:description" content="${get_course_about_section(request, course, 'short_description')}" />
 </%block>
-
 
 <%block name="js_extra">
   <script type="text/javascript">
@@ -32,21 +32,21 @@ from six import string_types
     % if can_add_course_to_cart:
       add_course_complete_handler = function(jqXHR, textStatus) {
         if (jqXHR.status == 200) {
-          location.href = "${cart_link}";
+          location.href = "${cart_link | n, decode.utf8}";
         }
         if (jqXHR.status == 400) {
-          $("#register_error")
-            .html(jqXHR.responseText ? jqXHR.responseText : "${_("An error occurred. Please try again later.")}")
+          $("#register_error").text(
+            jqXHR.responseText ? jqXHR.responseText : "${_("An error occurred. Please try again later.") | n, decode.utf8}")
             .css("display", "block");
         }
         else if (jqXHR.status == 403) {
-            location.href = "${reg_then_add_to_cart_link}";
+            location.href = "${reg_then_add_to_cart_link | n, decode.utf8}";
         }
       };
 
       $("#add_to_cart_post").click(function(event){
         $.ajax({
-          url: "${reverse('add_course_to_cart', args=[text_type(course.id)])}",
+          url: "${reverse('add_course_to_cart', args=[text_type(course.id)]) | n, decode.utf8}",
           type: "POST",
           /* Rant: HAD TO USE COMPLETE B/C PROMISE.DONE FOR SOME REASON DOES NOT WORK ON THIS PAGE. */
           complete: add_course_complete_handler
@@ -58,23 +58,23 @@ from six import string_types
     ## making the conditional around this entire JS block for sanity
     %if settings.FEATURES.get('RESTRICT_ENROLL_BY_REG_METHOD') and course.enrollment_domain:
       <%
-        perms_error = _('The currently logged-in user account does not have permission to enroll in this course. '
+        perms_error = Text(_('The currently logged-in user account does not have permission to enroll in this course. '
                         'You may need to {start_logout_tag}log out{end_tag} then try the enroll button again. '
-                        'Please visit the {start_help_tag}help page{end_tag} for a possible solution.').format(
-                          start_help_tag="<a href='{url}'>".format(url=marketing_link('FAQ')), end_tag='</a>',
-                          start_logout_tag="<a href='{url}'>".format(url=reverse('logout'))
+                        'Please visit the {start_help_tag}help page{end_tag} for a possible solution.')).format(
+                          start_help_tag=HTML("<a href='{url}'>").format(url=marketing_link('FAQ')), end_tag=HTML('</a>'),
+                          start_logout_tag=HTML("<a href='{url}'>").format(url=reverse('logout'))
                           )
       %>
     $('#class_enroll_form').on('ajax:complete', function(event, xhr) {
       if(xhr.status == 200) {
-        location.href = "${reverse('dashboard')}";
+        location.href = "${reverse('dashboard') | n, decode.utf8}";
       } else if (xhr.status == 403) {
-        location.href = "${reverse('course-specific-register', args=[text_type(course.id)])}?course_id=${course.id | u}&enrollment_action=enroll";
+        location.href = "${reverse('course-specific-register', args=[text_type(course.id)]) | n, decode.utf8 }?course_id=${course.id | n, decode.utf8 }&enrollment_action=enroll";
       } else if (xhr.status == 400) { //This means the user did not have permission
-        $('#register_error').html("${perms_error}").css("display", "block");
+        $('#register_error').text("${perms_error | n, decode.utf8}").css("display", "block");
       } else {
-        $('#register_error').html(
-            (xhr.responseText ? xhr.responseText : "${_("An error occurred. Please try again later.")}")
+        $('#register_error').text(
+            (xhr.responseText ? xhr.responseText : "${_("An error occurred. Please try again later.") | n, decode.utf8}")
         ).css("display", "block");
       }
     });
@@ -84,16 +84,16 @@ from six import string_types
     $('#class_enroll_form').on('ajax:complete', function(event, xhr) {
       if(xhr.status == 200) {
         if (xhr.responseText == "") {
-          location.href = "${reverse('dashboard')}";
+          location.href = "${reverse('dashboard') | n, decode.utf8}";
         }
         else {
           location.href = xhr.responseText;
         }
       } else if (xhr.status == 403) {
-          location.href = "${reverse('register_user')}?course_id=${course.id | u}&enrollment_action=enroll";
+          location.href = "${reverse('register_user') | n, decode.utf8  }?course_id=${course.id | n, decode.utf8 }&enrollment_action=enroll";
       } else {
-        $('#register_error').html(
-            (xhr.responseText ? xhr.responseText : "${_("An error occurred. Please try again later.")}")
+        $('#register_error').text(
+            (xhr.responseText ? xhr.responseText : "${_("An error occurred. Please try again later.") | n, decode.utf8}")
         ).css("display", "block");
       }
     });
@@ -106,9 +106,10 @@ from six import string_types
   <script src="${static.url('js/course_info.js')}"></script>
 </%block>
 
-<%block name="pagetitle">${course.display_name_with_default_escaped}</%block>
+<%block name="pagetitle">${course.display_name_with_default}</%block>
 
 <section class="course-info">
+
   <%block name="course_about_header">
   <header class="course-profile">
     <input type="hidden" id="is_vip" value="${is_vip}"/>
@@ -118,10 +119,10 @@ from six import string_types
       <section class="intro">
         <div class="heading-group">
           <h1>
-            ${course.display_name_with_default_escaped}
+            ${course.display_name_with_default}
           </h1>
           <br />
-          <span>${course.display_org_with_default | h}</span>
+          <span>${course.display_org_with_default}</span>
         </div>
 
         <div class="main-cta">
@@ -139,9 +140,9 @@ from six import string_types
             %>
             <a href="#" class="${href_class}" data-is-subscribe-pay="${is_subscribe_pay}">
               %if registration_price > 0:
-                ${_("Enroll {price}").format(price=course_price)}
+                  ${_("Enroll {price}").format(price=course_price)}
               %else:
-                ${pgettext("Free Enroll Course", "Enroll")}
+                  ${pgettext("Free Enroll Course", "Enroll")}
               %endif
             </a>
             <div id="register_error"></div>
@@ -150,7 +151,7 @@ from six import string_types
               <a href="${course_target}">
             %endif
 
-            <span class="register disabled">${_("Enrolled")}</span>
+            <span class="register disabled">${_("You are enrolled in this course")}</span>
           
             %if show_courseware_link:
               <strong>${_("View Course")}</strong>
@@ -162,7 +163,7 @@ from six import string_types
             <a href="${course_target}">
           %endif
 
-          <span class="register disabled">${_("Enrolled")}</span>
+          <span class="register disabled">${_("You are enrolled in this course")}</span>
           
           %if show_courseware_link:
             <strong>${_("View Course")}</strong>
@@ -170,7 +171,7 @@ from six import string_types
           %endif
         %elif in_cart:
           <span class="add-to-cart">
-            ${_('This course is in your <a href="{cart_link}">cart</a>.').format(cart_link=cart_link)}
+            ${Text(_('This course is in your <a href="{cart_link}">cart</a>.')).format(cart_link=cart_link)}
           </span>
         % elif is_course_full:
           <span class="register disabled">
@@ -197,16 +198,27 @@ from six import string_types
               reg_element_id = ""
           %>
           <a href="${reg_href}" class="add-to-cart" id="${reg_element_id}">
-            ${_("Add {course_name} to Cart <span>({price} USD)</span>")\
-              .format(course_name=course.display_number_with_default, price=course_price)}
+
+            ${_("Add {course_name} to Cart <span>({price} {currency_code})</span>")\
+              .format(course_name=course.display_number_with_default, price=course_price, currency_code=currency_code)}
+
           </a>
           <div id="register_error"></div>
+        %elif allow_anonymous:
+          %if show_courseware_link:
+            <a href="${course_target}">
+            <strong>${_("View Course")}</strong>
+            </a>
+          %endif
         %else:
           %if is_vip and not is_subscribe_pay:
             <%
               reg_href="#"
               href_class = "register"
+
             %>
+
+
             <a href="${reg_href}" class="${href_class}" data-is-subscribe-pay="${is_subscribe_pay}">
               ${_("Free Enrollment for VIP")}
             </a>
@@ -230,6 +242,7 @@ from six import string_types
             </a>
             <div id="register_error"></div>
           %endif
+
 
         %endif
         </div>
@@ -255,6 +268,7 @@ from six import string_types
   </%block>
 
   <div class="container">
+
     <%block name="course_about_details">
     <div class="details">
       % if staff_access and studio_url is not None:
@@ -264,95 +278,19 @@ from six import string_types
       % endif
 
       <div class="inner-wrapper">
-        <!-- add vip adver -->
-        <div id="vip" style="display: none"></div>
-        <div class="about-tabs">
-          <span class="about-tab about-tab-active" onClick="showTab('about-info', 0)">${pgettext("CourseAbout", "Description")}</span>
-          <span class="about-tab" onClick="showTab('about-staff', 1)">${pgettext("CourseAbout", "Instructor")}</span>
-          <span class="about-tab" onClick="showTab('about-outline', 2)">${pgettext("CourseAbout", "Outline")}<span>
-        </div>
-        ${get_course_about_section(request, course, "overview")}
+        ${HTML(get_course_about_section(request, course, "overview"))}
       </div>
-
-      <!-- add course_about tab -->
-      <script>
-        if (!document.getElementById('is_vip').value || document.getElementById('is_vip').value === 'None' ||  document.getElementById('is_vip').value === 'False'){
-          document.getElementById('vip').style.display = 'block';
-        }
-
-        function showTab(tab, index) {
-          if (document.getElementsByClassName('about-info')[0]){
-            document.getElementsByClassName('about-info')[0].style.display = 'none';
-            document.getElementsByClassName('about-staff')[0].style.display = 'none';
-            document.getElementsByClassName('about-outline')[0].style.display = 'none';
-            
-            document.getElementsByClassName('about-tab')[0].className = 'about-tab';
-            document.getElementsByClassName('about-tab')[1].className = 'about-tab';
-            document.getElementsByClassName('about-tab')[2].className = 'about-tab';
-            document.getElementsByClassName('about-tab')[parseInt(index)].className = 'about-tab about-tab-active';
-            document.getElementsByClassName(tab)[0].style.display = 'block';
-          }
-          
-        }
-      </script>
-      <script src="//oss.elitemba.cn/gtm/membership.js"></script>
-
-      <!-- video player-->
-      <link href="${static.url('normal-theme/css/imgcache-qq-tcplayer.css')}" rel="stylesheet">
-      <script src="${static.url('js/imgcache-qq-tcplayer-min.js')}"></script>
-      <div class="about-cover" onclick="closeVideo()" style="display: none">
-        <span class="fa-my fa-my-close"></span>
-      </div>
-      <div class="video-box" style="display: none">
-        <video id="player-container-id" preload="auto" playsinline webkit-playinline></video>
-      </div>
-  
-      <script>
-        $('.about-video').show();
-        $('.about-language').show();
-        $('.about-chapter').show();
-
-        var appID = "1251349076";
-        var aboutVideoID = $('.about-video').attr('data-video-id');
-        
-        var player;
-        function showVideo(e){
-          var videoID = e.getAttribute('data-video-id');
-          if (player){
-            player.loadVideoByID({
-              fileID: videoID,
-              appID: appID,
-              autoplay: true,
-            });
-          } else {
-            player = TCPlayer("player-container-id", {
-              fileID: videoID,
-              appID: appID,
-              autoplay: true,
-            });
-          }
-          $('.about-cover').show();
-          $('.video-box').show();
-          $('body').css('overflow', 'hidden');
-        }
-
-        function closeVideo(){
-          $('body').css('overflow', 'auto');
-          $('.about-cover').hide();
-          $('.video-box').hide();
-          player.pause();
-        }
-
-      </script>
     </div>
     </%block>
 
     <div class="course-sidebar">
       <div class="course-summary">
 
+        <%include file="course_about_sidebar_header.html" />
+
         <%block name="course_about_important_dates">
         <ol class="important-dates">
-          <li class="important-dates-item"><span class="icon fa fa-info-circle" aria-hidden="true"></span><p class="important-dates-item-title">${_("Course Number")}</p><span class="important-dates-item-text course-number">${course.display_number_with_default | h}</span></li>
+          <li class="important-dates-item"><span class="icon fa fa-info-circle" aria-hidden="true"></span><p class="important-dates-item-title">${_("Course Number")}</p><span class="important-dates-item-text course-number">${course.display_number_with_default}</span></li>
           % if not course.start_date_is_still_default:
               <%
                   course_start_date = course.advertised_start or course.start
@@ -366,11 +304,15 @@ from six import string_types
                   <%
                      course_date_string = course_start_date.strftime('%Y-%m-%dT%H:%M:%S%z')
                   %>
+
+                  <!--<span class="important-dates-item-text start-date localized_datetime" data-format="shortDate" data-datetime="${course_date_string}" data-language="${LANGUAGE_CODE}"></span>-->
+
                   <span class="important-dates-item-text start-date localized_datetime"
                         data-format="shortDate"
                         data-language="${LANGUAGE_CODE}"
                         data-datetime="${course_date_string}">
                   </span>
+
               % endif
             </li>
           % endif
@@ -390,11 +332,15 @@ from six import string_types
                     <%
                         course_date_string = course_end_date.strftime('%Y-%m-%dT%H:%M:%S%z')
                     %>
+
+                    <!--<span class="important-dates-item-text final-date localized_datetime" data-format="shortDate" data-datetime="${course_date_string}" data-language="${LANGUAGE_CODE}"></span>-->
+
                     <span class="important-dates-item-text final-date localized_datetime"
                           data-format="shortDate"
                           data-language="${LANGUAGE_CODE}"
                           data-datetime="${course_date_string}">
                     </span>
+
                   % endif
             </li>
             % endif
@@ -421,9 +367,9 @@ from six import string_types
             ## Multiple pre-requisite courses are not supported on frontend that's why we are pulling first element
             <span class="important-dates-item-text pre-requisite"><a href="${prc_target}">${pre_requisite_courses[0]['display']}</a></span>
             <p class="tip">
-            ${_("You must successfully complete {link_start}{prc_display}{link_end} before you begin this course.").format(
-              link_start='<a href="{}">'.format(prc_target),
-              link_end='</a>',
+            ${Text(_("You must successfully complete {link_start}{prc_display}{link_end} before you begin this course.")).format(
+              link_start=HTML('<a href="{}">').format(prc_target),
+              link_end=HTML('</a>'),
               prc_display=pre_requisite_courses[0]['display'],
             )}
             </p>
@@ -435,8 +381,6 @@ from six import string_types
           % endif
         </ol>
         </%block>
-        
-        <%include file="course_about_sidebar_header.html" />
     </div>
 
       <%block name="course_about_reviews_tool">
@@ -470,7 +414,8 @@ from six import string_types
     %endif
   </div>
 
-</section>
+  </div>
+</div>
 
 ## Need to put this hidden form on the page so that the registration button works.
 ## Since it's no harm to display a hidden form, we display it with the most permissive conditional
@@ -480,7 +425,7 @@ from six import string_types
     <form id="class_enroll_form" method="post" data-remote="true" action="${reverse('change_enrollment')}">
       <fieldset class="enroll_fieldset">
         <legend class="sr">${pgettext("self","Enroll")}</legend>
-        <input name="course_id" type="hidden" value="${course.id | h}">
+        <input name="course_id" type="hidden" value="${course.id }">
         <input name="enrollment_action" type="hidden" value="enroll">
       </fieldset>
       <div class="submit">
@@ -513,63 +458,4 @@ from six import string_types
       }
     })
   });
-</script>
-<script>
-  var ua = navigator.userAgent;
-  if(/micromessenger/i.test(ua)){
-    // 动态加载wx-sdk
-    var head = document.getElementsByTagName('head')[0];
-    var script = document.createElement('script');
-    script.src = '//res2.wx.qq.com/open/js/jweixin-1.4.0.js ';
-    head.appendChild(script);
-    var url = location.href.split('#')[0];
-
-    script.onload = function(){
-      // 获取签名信息
-      $.ajax({
-        url: '/api/courses/v1/getweixinsign',
-        type: 'POST',
-        data: { 'url': url },
-        success: function (response) {
-          // 配置wx-sdk config
-          wx.config({
-            appId: response.appId,
-            timestamp: response.timestamp,
-            nonceStr: response.nonceStr,
-            signature: response.signature,
-            jsApiList: [
-              'updateAppMessageShareData', 
-              'updateTimelineShareData', 
-              'onMenuShareWeibo',
-              'onMenuShareTimeline',
-              'onMenuShareAppMessage',
-              'onMenuShareQQ',
-              'onMenuShareQZone'
-            ]
-          });
-          
-          // 配置个性化设置
-          wx.ready(function(){
-            var wxShareImg = 'https://oss.elitemba.cn/web_static/imgs/mba_logo.png';
-            var obj = {
-                title: document.title,
-                link: url,
-                imgUrl: wxShareImg,
-                desc: ''
-            };
-            
-            wx.updateAppMessageShareData(obj)
-            wx.updateTimelineShareData(obj)
-            wx.onMenuShareWeibo(obj)
-            wx.onMenuShareTimeline(obj);
-            wx.onMenuShareAppMessage(obj);
-            wx.onMenuShareQQ(obj);
-            wx.onMenuShareQZone(obj);
-          })
-        }
-      })   
-    }
-
- 
-}
 </script>

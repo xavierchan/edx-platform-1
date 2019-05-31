@@ -6,9 +6,6 @@ from django.utils.translation import ugettext as _
 from django.urls import reverse
 from django.conf import settings
 from six import text_type
-from third_party_auth.models import OAuth2ProviderConfig
-import urllib
-
 %>
 
 <header>
@@ -19,8 +16,6 @@ import urllib
     ##       or something allowing themes to do whatever they
     ##       want here (and on this whole page, really).
       <%
-        provider_config = OAuth2ProviderConfig.current('weibo')
-        weibo_appkey = provider_config.key
         site_domain = static.get_value('site_domain', settings.SITE_NAME)
         site_protocol = 'https' if settings.HTTPS == 'on' else 'http'
         platform_name = static.get_platform_name()
@@ -39,35 +34,6 @@ import urllib
                 )
             )
         ).replace(u" ", u"+")
-
-        course_url =u"{protocol}://{domain}{path}".format(
-                protocol=site_protocol,
-                domain=site_domain,
-                path=urllib.quote_plus(
-                    reverse('about_course', args=[text_type(course.id)])
-                )
-            )
-
-        share_text = _("A wonderful course is rare to find and must be shared! I'm taking {title} on EliteMBA. Check it out! {url}").format(
-            title=course.display_name_with_default_escaped,
-            url=u"{protocol}://{domain}{path}".format(
-                protocol=site_protocol,
-                domain=site_domain,
-                path=urllib.quote_plus(
-                    reverse('about_course', args=[text_type(course.id)])
-                )
-            )
-        )
-
-        weibo_dict = {'url': request.build_absolute_uri(), 'ralateUid': 5974026525,'language': 'zh_cn','title': share_text}
-        weibostr = urllib.urlencode(weibo_dict)
-        weibourl = "http://service.weibo.com/share/share.php?" + weibostr
-
-        qzone_dict = {'url': course_url, 'desc': share_text, 'title': course.display_name_with_default_escaped}
-        qzonestr = urllib.urlencode(qzone_dict)
-        qzoneurl = "https://sns.qzone.qq.com/cgi-bin/qzshare/cgi_qzshare_onekey?" + qzonestr
-
-        weixin_url = course_url
         tweet_action = u"http://twitter.com/intent/tweet?text={tweet_text}".format(tweet_text=tweet_text)
 
         facebook_link = static.get_value('course_about_facebook_link', settings.PLATFORM_FACEBOOK_ACCOUNT)
@@ -96,18 +62,6 @@ import urllib
       </a>
       <a href="${email_subject}" class="share">
         <span class="icon fa fa-envelope" aria-hidden="true"></span><span class="sr">${_("Email someone to say you've enrolled in this course")}</span>
-      </a>
-
-      <a href="${weibourl}" class="share">
-        <span class="icon fa fa-envelope" aria-hidden="true"></span><span class="sr">${_("weibo")}</span>
-      </a>
-
-      <a href="${qzoneurl}" class="share">
-        <span class="icon fa fa-envelope" aria-hidden="true"></span><span class="sr">${_("weixin")}</span>
-      </a>
-
-      <a href="${weixin_url}" class="share">
-        <span class="icon fa fa-envelope" aria-hidden="true"></span><span class="sr">${_("qq")}</span>
       </a>
   </div>
   % endif
