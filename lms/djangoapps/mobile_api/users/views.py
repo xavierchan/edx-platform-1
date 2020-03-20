@@ -421,7 +421,7 @@ class UserDeactivateLogoutView(views.APIView):
     http_method_names = ["post",]
     permission_classes = (permissions.IsAuthenticated,)
 
-    def post(self, request):
+    def post(self, request, *args, **kwargs)::
         """
         POST /api/mobile/v1/users/{username}/deactivate_logout/
 
