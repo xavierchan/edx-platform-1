@@ -76,6 +76,7 @@ def account_settings_context(request):
 
     context = {
         'auth': {},
+        'phone': request.user.profile.phone or "null",
         'duplicate_provider': None,
         'nav_hidden': True,
         'fields': {
@@ -111,6 +112,10 @@ def account_settings_context(request):
             'ENABLE_ACCOUNT_DELETION', settings.FEATURES.get('ENABLE_ACCOUNT_DELETION', False)
         ),
         'extended_profile_fields': _get_extended_profile_fields(),
+        'currency': {
+            'code': settings.PAID_COURSE_REGISTRATION_CURRENCY[0],
+            'symbol': settings.PAID_COURSE_REGISTRATION_CURRENCY[1]
+        }
     }
 
     enterprise_customer = get_enterprise_customer_for_learner(site=request.site, user=request.user)
@@ -173,7 +178,9 @@ def get_user_orders(user):
                 'number': order['number'],
                 'price': order['total_excl_tax'],
                 'order_date': strftime_localized(date_placed, 'SHORT_DATE'),
-                'receipt_url': EcommerceService().get_receipt_page_url(order['number']),
+                'receipt_url': '{url}&username={username}'.format(
+                    url=EcommerceService().get_receipt_page_url(order['number']),
+                    username=user.username),
                 'lines': order['lines'],
             }
             user_orders.append(order_data)

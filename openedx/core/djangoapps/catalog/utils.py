@@ -516,3 +516,23 @@ def get_course_run_details(course_run_key, fields):
         course_run_details = get_edx_api_data(catalog_integration, 'course_runs', api, resource_id=course_run_key,
                                               cache_key=cache_key, many=False, traverse_pagination=False, fields=fields)
     return course_run_details
+
+
+def get_program_extend(uuid):
+    """Retrieve program extend from the specific program object.
+
+    Keyword Arguments:
+        uuid (string): Name identifying a specific program.
+
+    Returns:        
+        dict, a program uuid is requested.
+    """
+    user, catalog_integration = check_catalog_integration_and_get_user(error_message_field='Program extend')
+    if user:
+        api = create_catalog_api_client(user)
+        data = get_edx_api_data(catalog_integration, 'program_extend', resource_id=uuid, api=api,
+                                cache_key=None)
+
+        return data
+    else:
+        return []

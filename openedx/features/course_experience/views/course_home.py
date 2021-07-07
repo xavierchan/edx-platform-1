@@ -8,7 +8,8 @@ from django.template.loader import render_to_string
 from django.utils.decorators import method_decorator
 from django.views.decorators.cache import cache_control
 from django.views.decorators.csrf import ensure_csrf_cookie
-from opaque_keys.edx.keys import CourseKey
+from django.conf import settings
+from opaque_keys.edx.keys import CourseKey, UsageKey
 from web_fragments.fragment import Fragment
 
 from course_modes.models import get_cosmetic_verified_display_price
@@ -42,7 +43,6 @@ from .course_sock import CourseSockFragmentView
 from .latest_update import LatestUpdateFragmentView
 from .welcome_message import WelcomeMessageFragmentView
 
-
 EMPTY_HANDOUTS_HTML = u'<ol></ol>'
 
 
@@ -50,6 +50,7 @@ class CourseHomeView(CourseTabView):
     """
     The home page for a course.
     """
+
     @method_decorator(ensure_csrf_cookie)
     @method_decorator(cache_control(no_cache=True, no_store=True, must_revalidate=True))
     @method_decorator(ensure_valid_course_key)
@@ -119,9 +120,15 @@ class CourseHomeFragmentView(EdxFragmentView):
         # Render the full content to enrolled users, as well as to course and global staff.
         # Unenrolled users who are not course or global staff are given only a subset.
         enrollment = CourseEnrollment.get_enrollment(request.user, course_key)
+        can_view_course = True
+        if settings.FEATURES.get('ENABLE_MEMBERSHIP_INTEGRATION', False) and request.user.is_authenticated():
+            from membership.models import VIPInfo
+            can_view_course = VIPInfo.can_view_course(request.user, course_key)
         user_access = {
             'is_anonymous': request.user.is_anonymous,
-            'is_enrolled': enrollment and enrollment.is_active,
+
+            'is_enrolled': enrollment and can_view_course,
+
             'is_staff': has_access(request.user, 'staff', course_key),
         }
 

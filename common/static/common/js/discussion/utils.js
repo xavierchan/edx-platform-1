@@ -143,7 +143,7 @@
 
         DiscussionUtil.showLoadingIndicator = function(element, takeFocus) {
             var animElem = edx.HtmlUtils.joinHtml(
-                edx.HtmlUtils.HTML("<div class='loading-animation' tabindex='0'>"),
+                edx.HtmlUtils.HTML("<div class='loading-animation modefi-loading-animation' tabindex='0'>"),
                 edx.HtmlUtils.HTML("<span class='icon fa fa-spinner' aria-hidden='true'></span><span class='sr'>"),
                 gettext('Loading content'),
                 edx.HtmlUtils.HTML('</span></div>')
@@ -158,7 +158,7 @@
         };
 
         DiscussionUtil.hideLoadingIndicator = function() {
-            return this.$_loading.remove();
+             return this.$_loading.remove();
         };
 
         DiscussionUtil.discussionAlert = function(header, body) {

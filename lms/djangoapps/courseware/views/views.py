@@ -21,7 +21,7 @@ from django.urls import reverse
 from django.utils.decorators import method_decorator
 from django.utils.http import urlquote_plus
 from django.utils.text import slugify
-from django.utils.translation import ugettext as _
+from django.utils.translation import ugettext_lazy as _
 from django.views.decorators.cache import cache_control
 from django.views.decorators.clickjacking import xframe_options_exempt
 from django.views.decorators.csrf import ensure_csrf_cookie
@@ -37,6 +37,10 @@ from six import text_type
 
 import shoppingcart
 import survey.views
+
+from lms.djangoapps.certificates import api as certs_api
+from lms.djangoapps.certificates.models import CertificateStatuses, GeneratedCertificate
+
 from course_modes.models import CourseMode, get_course_prices
 from courseware.access import has_access, has_ccx_coach_role
 from courseware.access_utils import check_course_open_for_learner
@@ -72,7 +76,7 @@ from lms.djangoapps.grades.course_grade_factory import CourseGradeFactory
 from lms.djangoapps.instructor.enrollment import uses_shib
 from lms.djangoapps.instructor.views.api import require_global_staff
 from lms.djangoapps.verify_student.services import IDVerificationService
-from openedx.core.djangoapps.catalog.utils import get_programs, get_programs_with_type
+from openedx.core.djangoapps.catalog.utils import get_programs, get_programs_with_type, get_program_extend
 from openedx.core.djangoapps.certificates import api as auto_certs_api
 from openedx.core.djangoapps.content.course_overviews.models import CourseOverview
 from openedx.core.djangoapps.credit.api import (
@@ -239,11 +243,17 @@ def courses(request):
 
     # Add marketable programs to the context.
     programs_list = get_programs_with_type(request.site, include_hidden=False)
+    # eliteu membership
+    vip_course_price_data = {}
+    if settings.FEATURES.get('ENABLE_MEMBERSHIP_INTEGRATION', False):
+        from membership.models import VIPCoursePrice
+        vip_course_price_data = VIPCoursePrice.get_vip_course_price_data()
 
     return render_to_response(
         "courseware/courses.html",
         {
             'courses': courses_list,
+            'vip_course_price_data': vip_course_price_data,
             'course_discovery_meanings': course_discovery_meanings,
             'programs_list': programs_list,
             'journal_info': get_journals_context(request),  # TODO: Course Listing Plugin required
@@ -825,9 +835,9 @@ def course_about(request, course_id):
             professional_mode = modes.get(CourseMode.PROFESSIONAL, '') or \
                 modes.get(CourseMode.NO_ID_PROFESSIONAL_MODE, '')
             if professional_mode.sku:
-                ecommerce_checkout_link = ecomm_service.get_checkout_page_url(professional_mode.sku)
+                ecommerce_checkout_link = ecomm_service.get_checkout_page_url(professional_mode.sku, username=request.user.username)
             if professional_mode.bulk_sku:
-                ecommerce_bulk_checkout_link = ecomm_service.get_checkout_page_url(professional_mode.bulk_sku)
+                ecommerce_bulk_checkout_link = ecomm_service.get_checkout_page_url(professional_mode.bulk_sku, username=request.user.username)
 
         registration_price, course_price = get_course_prices(course)
 
@@ -873,6 +883,7 @@ def course_about(request, course_id):
             'registered': registered,
             'course_target': course_target,
             'is_cosmetic_price_enabled': settings.FEATURES.get('ENABLE_COSMETIC_DISPLAY_PRICE'),
+            'registration_price': registration_price,
             'course_price': course_price,
             'in_cart': in_cart,
             'ecommerce_checkout': ecommerce_checkout,
@@ -896,7 +907,41 @@ def course_about(request, course_id):
             'reviews_fragment_view': reviews_fragment_view,
             'sidebar_html_enabled': sidebar_html_enabled,
             'allow_anonymous': allow_anonymous,
+            'currency_code': settings.PAID_COURSE_REGISTRATION_CURRENCY[0],
+            'currency_symbol': settings.PAID_COURSE_REGISTRATION_CURRENCY[1]
         }
+
+        is_subscribe_course = False
+        is_vip = False
+        is_subscribe_pay = False
+        vip_expired_at = None
+        # ENABLE_MEMBERSHIP_INTEGRATION (ELITEU ADD)
+        if settings.FEATURES.get('ENABLE_MEMBERSHIP_INTEGRATION', False):
+            # generated_certifate
+            user = request.user
+            generated_certifate = False
+            if user.is_authenticated():
+                if GeneratedCertificate.certificate_for_student(user, course_key):
+                    generated_certifate = True
+            context['generated_certifate'] = generated_certifate
+
+            # Whether to subscribe during the membership period
+            from membership.models import VIPCourseEnrollment, VIPInfo, VIPCoursePrice
+
+            if user.is_authenticated():
+                is_vip = VIPInfo.is_vip(user)
+                vip_info = VIPInfo.get_vipinfo_for_user(user)
+                if vip_info:
+                    vip_expired_at = vip_info.expired_at
+                is_subscribe_pay = VIPCoursePrice.is_subscribe_pay(course_id=course_key)
+                if registered:
+                    vip_course_enrollment = VIPCourseEnrollment.objects.filter(user=user, course_id=course_key).first()
+                    if vip_course_enrollment:
+                        is_subscribe_course = True
+        context['is_vip'] = is_vip
+        context['is_subscribe_course'] = is_subscribe_course
+        context['is_subscribe_pay'] = is_subscribe_pay
+        context['vip_expire_at'] = vip_expired_at
 
         return render_to_response('courseware/course_about.html', context)
 
@@ -917,12 +962,20 @@ def program_marketing(request, program_uuid):
     skus = program.get('skus')
     ecommerce_service = EcommerceService()
 
+    # Program Extend    
+    program_extend = get_program_extend(program_uuid)
+    program['tencent_video'] = program_extend['video'] if isinstance(program_extend, dict) else ''
+
     context = {'program': program}
 
     if program.get('is_learner_eligible_for_one_click_purchase') and skus:
         context['buy_button_href'] = ecommerce_service.get_checkout_page_url(*skus, program_uuid=program_uuid)
 
     context['uses_bootstrap'] = True
+    context['course_currency'] = {
+        'code': settings.PAID_COURSE_REGISTRATION_CURRENCY[0],
+        'symbol': settings.PAID_COURSE_REGISTRATION_CURRENCY[1]
+    }
 
     return render_to_response('courseware/program_marketing.html', context)
 
@@ -1723,8 +1776,8 @@ def financial_assistance_form(request):
                 'placeholder': '',
                 'name': 'mktg-permission',
                 'label': _(
-                    'I allow edX to use the information provided in this application '
-                    '(except for financial information) for edX marketing purposes.'
+                    'I allow EliteMBA to use the information provided in this application '
+                    '(except for financial information) for EliteMBA marketing purposes.'
                 ),
                 'defaultValue': '',
                 'type': 'checkbox',

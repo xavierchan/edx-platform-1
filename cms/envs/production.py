@@ -15,6 +15,7 @@ from openedx.core.djangoapps.plugins import plugin_settings, constants as plugin
 from django.core.urlresolvers import reverse_lazy
 
 from .common import *
+from .eliteu import *
 
 from openedx.core.lib.derived import derive_settings  # pylint: disable=wrong-import-order
 from openedx.core.lib.logsettings import get_logger_config  # pylint: disable=wrong-import-order
@@ -620,3 +621,6 @@ plugin_settings.add_plugins(__name__, plugin_constants.ProjectType.CMS, plugin_c
 ########################## Derive Any Derived Settings  #######################
 
 derive_settings(__name__)
+
+##### GOOGLE ANALYTICS IDS #####
+GOOGLE_ANALYTICS_ACCOUNT = AUTH_TOKENS.get('GOOGLE_ANALYTICS_ACCOUNT')

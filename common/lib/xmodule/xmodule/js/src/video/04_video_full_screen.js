@@ -100,7 +100,8 @@
             if (isFullScreen) {
                 this.resizer
                 .delta
-                .substract(height, 'height')
+                // .substract(height, 'height')
+                .substract(53.5, 'height') // fix 4719 bug
                 .setMode('both');
             } else {
                 this.resizer
@@ -141,10 +142,10 @@
 
             this.el.trigger('fullscreen', [this.isFullScreen]);
 
-            $(closedCaptionsEl).css({
-                top: '70%',
-                left: '5%'
-            });
+            // $(closedCaptionsEl).css({
+            //     top: '70%',
+            //     left: '5%'
+            // });
         }
 
         function enter() {
@@ -163,10 +164,10 @@
 
             this.el.trigger('fullscreen', [this.isFullScreen]);
 
-            $(closedCaptionsEl).css({
-                top: '70%',
-                left: '5%'
-            });
+            // $(closedCaptionsEl).css({
+            //     top: '70%',
+            //     left: '5%'
+            // });
         }
 
     /** Toggle fullscreen mode. */

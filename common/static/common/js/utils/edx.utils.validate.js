@@ -24,7 +24,7 @@
                         template: _.template('<li><%- content %></li>'),
 
                         msg: {
-                            email: gettext("The email address you've provided isn't formatted correctly."),
+                            email: gettext("Incorrect format."),
                             min: gettext('%(field)s must have at least %(count)d characters.'),
                             max: gettext('%(field)s can only contain up to %(count)d characters.'),
                             required: gettext('Please enter your %(field)s.')
@@ -112,13 +112,23 @@
                                 '|\\[(25[0-5]|2[0-4]\\d|[0-1]?\\d?\\d)(\\.(25[0-5]|2[0-4]\\d|[0-1]?\\d?\\d)){3}\\]$'
                             ].join(''), 'i'
                         ),
-
+                            regexPhone: new RegExp(/^1\d{10}$/),
                             valid: function($el) {
-                                return $el.attr('type') === 'email' ? _fn.validate.email.format($el.val()) : true;
+                                if ($el.attr('id') === 'login-email') {
+                                    return _fn.validate.email.formatEmailOrPhone($el.val());
+                                } else if ($el.attr('type') === 'email') {
+                                    return _fn.validate.email.format($el.val());
+                                } else {
+                                    return true;
+                                }
+                                // return $el.attr('type') === 'email' ? _fn.validate.email.format($el.val()) : true;
                             },
 
                             format: function(str) {
                                 return _fn.validate.email.regex.test(str);
+                            },
+                            formatEmailOrPhone: function(str) {
+                                return _fn.validate.email.regex.test(str) || _fn.validate.email.regexPhone.test(str);
                             }
                         },
 

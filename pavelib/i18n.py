@@ -321,3 +321,191 @@ def find_release_resources():
     else:
         msg = "Strange Transifex config! Found these release-* resources:\n" + "\n".join(resources)
         raise ValueError(msg)
+
+
+"""
+Eliteu Custom Command
+"""
+import polib
+import os
+import re
+
+from os import remove, walk
+from shutil import move
+from tempfile import mkstemp
+
+
+def find_specific_resource(lang):
+    LOCALE_DIR = "conf/locale/{lang}/LC_MESSAGES"
+    resource_dir = LOCALE_DIR.format(lang=lang)
+    flist = os.listdir(resource_dir)
+
+    result = filter(lambda x: os.path.splitext(x)[1] == '.po', flist)
+    resource = [os.path.join(resource_dir, i) for i in result]
+    return resource
+
+
+def extract_invalid(fpath):
+    filename = os.path.basename(fpath)
+    dirname = os.path.dirname(fpath)
+    name = os.path.join(dirname, 'invalid-' + filename)
+    zhPattern = re.compile(u'[\u4e00-\u9fa5]+')
+
+    # create if not exists, truncate if exists.
+    if not os.path.exists(name):
+        f = open(name, 'w')
+        f.close()
+    else:
+        f = open(name, 'w')
+        f.seek(0)
+        f.truncate()
+        f.close()
+        
+    source = polib.pofile(fpath)
+    target = polib.pofile(name)
+    target.header = source.header
+    target.metadata = source.metadata
+
+    for msg in source:
+        if zhPattern.search(msg.msgid) is not None:
+            target.append(msg)
+
+    if len(target) > 0:
+        target.sort(key=lambda x: len(x.msgid), reverse=True)
+        target.save()
+    else:
+        os.remove(name)
+
+
+def code_replace(source):
+    BASE_DIR = "/edx/app/edxapp/edx-platform"
+    pomsgs = polib.pofile(source)
+
+    for msg in pomsgs:
+        # A list of file path
+        occurrences = msg.occurrences
+        for (path, line) in occurrences:
+            fpath = os.path.join(BASE_DIR, path)
+            if os.path.exists(fpath) and msg.msgstr != '':
+                msgid = msg.msgid.encode('utf-8')
+                msgstr = msg.msgstr.encode('utf-8')
+                replace(fpath, msgid, msgstr)
+
+
+def replace(source_file_path, pattern, substring):
+    
+    def need_to_pass(line):
+        # comment need to pass
+        c1 = line.lstrip().startswith('#')
+        c2 = line.lstrip().startswith("//")
+        c3 = line.lstrip().startswith('<! --')
+        result = c1 or c2 or c3
+        return result
+
+    fh, target_file_path = mkstemp()
+    target_file = open(target_file_path, 'w')
+    source_file = open(source_file_path, 'r')
+
+    for line in source_file:
+        if pattern in line and not need_to_pass(line):
+            target_file.write(line.replace(pattern, substring))
+        else:
+            target_file.write(line)
+
+    target_file.close()
+    source_file.close()
+    remove(source_file_path)
+    move(target_file_path, source_file_path)
+
+
+def change_position(fpath):
+    source = polib.pofile(fpath)
+
+    fh, target_file_path = mkstemp()
+    target = open(target_file_path, 'w')
+    target.close()
+    target = polib.pofile(target_file_path)
+    zhPattern = re.compile(u'[\u4e00-\u9fa5]+')
+
+    target.header = source.header
+    target.metadata = source.metadata
+
+    for s in source:
+        valid = zhPattern.search(s.msgid)
+        if valid is not None:
+            if s.msgstr != "":
+                s.msgid, s.msgstr = s.msgstr, s.msgid
+        target.append(s)
+
+    target.save()
+    remove(fpath)
+    move(target_file_path, fpath)  
+
+
+@task
+def i18n_third_party():
+    sh("/bin/cp -rf ../edx-membership/conf/locale/en/LC_MESSAGES/django.po conf/locale/en/LC_MESSAGES/membership.po")
+    sh("/bin/cp -rf ../edx-membership/conf/locale/en/LC_MESSAGES/djangojs.po conf/locale/en/LC_MESSAGES/membership-js.po")
+    
+
+@task
+@needs(
+    "pavelib.i18n.i18n_clean",
+)
+@timed
+def i18n_update():
+    # Step1: extract new word
+    # Step2: push to transifex and validate
+    # Step3: generate
+    sh("i18n_tool extract")
+    sh("paver i18n_third_party")
+    sh("i18n_tool transifex push")
+    sh("i18n_tool validate")
+
+
+@task
+@needs(
+    "pavelib.i18n.i18n_transifex_pull",
+)
+@timed
+def i18n_replace():
+    # Step1: pull transifex file
+    # Step2: extract invalid word
+    # Step3: replace code
+    # Step4: remove invalid file
+    # Step5: change position of code
+    files = find_specific_resource('zh_CN')
+    remove = filter(lambda x: x.split('/')[-1].startswith('invalid'), files)
+    map(os.remove, remove)
+    
+    resource = find_specific_resource('zh_CN')
+    map(extract_invalid, resource)
+
+    flist = find_specific_resource('zh_CN')
+    invalid = filter(lambda x: x.split('/')[-1].startswith('invalid'), flist)
+    map(code_replace, invalid)
+    
+    map(os.remove, invalid)
+    map(change_position, resource)
+
+   
+@task
+@timed
+def i18n_push():
+    # Re extract after code replace
+    sh("i18n_tool extract")
+    sh("paver i18n_third_party")
+    sh("i18n_tool validate")
+    sh("i18n_tool generate --strict")
+    sh("python manage.py cms compilejsi18n")
+    sh("python manage.py lms compilejsi18n")
+
+    msg = colorize(
+            'green',
+            "Please checking your code after update and replace."
+        )
+    print(msg)
+
+    con = raw_input("Are you want to replace all sources in transifex (y/n)? ")
+    if con.lower() == 'y':
+        sh("tx push -s -t -l zh_CN")

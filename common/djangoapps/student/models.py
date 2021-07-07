@@ -52,6 +52,8 @@ from user_util import user_util
 
 from edx_django_utils.cache import RequestCache
 import lms.lib.comment_client as cc
+from student.hasher import AESCipher
+from student.fields import AESCharField
 from student.signals import UNENROLL_DONE, ENROLL_STATUS_CHANGE, ENROLLMENT_TRACK_UPDATED
 from lms.djangoapps.certificates.models import GeneratedCertificate
 from course_modes.models import CourseMode
@@ -473,6 +475,9 @@ class UserProfile(models.Model):
     allow_certificate = models.BooleanField(default=1)
     bio = models.CharField(blank=True, null=True, max_length=3000, db_index=False)
     profile_image_uploaded_at = models.DateTimeField(null=True, blank=True)
+
+    #phone = models.CharField(_(u"Phone"), max_length=32, null=True)
+    phone = AESCharField("Phone", max_length=60, null=True)
 
     @property
     def has_profile_image(self):

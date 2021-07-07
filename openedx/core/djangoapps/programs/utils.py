@@ -263,9 +263,10 @@ class ProgramProgressMeter(object):
                     not_started.append(course)
 
             grades = {}
-            for run in self.course_run_ids:
-                grade = self.course_grade_factory.read(self.user, course_key=CourseKey.from_string(run))
-                grades[run] = grade.percent
+            if not count_only:
+                for run in self.course_run_ids:
+                    grade = self.course_grade_factory.read(self.user, course_key=CourseKey.from_string(run))
+                    grades[run] = grade.percent
 
             progress.append({
                 'uuid': program_copy['uuid'],

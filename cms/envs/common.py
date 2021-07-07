@@ -147,6 +147,7 @@ from lms.envs.common import (
     _make_mako_template_dirs,
     _make_locale_paths,
 )
+from lms.envs.eliteu_common import *
 from path import Path as path
 from django.core.urlresolvers import reverse_lazy
 
@@ -1252,12 +1253,12 @@ EVENT_TRACKING_PROCESSORS = []
 #### PASSWORD POLICY SETTINGS #####
 AUTH_PASSWORD_VALIDATORS = [
     {
-        "NAME": "django.contrib.auth.password_validation.UserAttributeSimilarityValidator",
+        "NAME": "util.password_policy_validators.UserAttributeSimilarityValidator",
     },
     {
         "NAME": "util.password_policy_validators.MinimumLengthValidator",
         "OPTIONS": {
-            "min_length": 2
+            "min_length": 6
         }
     },
     {

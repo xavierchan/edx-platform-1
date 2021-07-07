@@ -6,6 +6,8 @@ Much of this file was broken out from views.py, previous history can be found th
 
 import logging
 
+import analytics
+from django.core.exceptions import ObjectDoesNotExist
 from django.conf import settings
 from django.contrib.auth import authenticate, login as django_login
 from django.contrib.auth.decorators import login_required
@@ -26,7 +28,10 @@ from openedx.core.djangoapps.password_policy import compliance as password_polic
 from openedx.core.djangoapps.site_configuration import helpers as configuration_helpers
 from openedx.core.djangoapps.util.user_messages import PageLevelMessages
 from openedx.core.djangolib.markup import HTML, Text
-from student.models import LoginFailures
+from student.models import (
+    LoginFailures,
+    UserProfile,
+)
 from student.views import send_reactivation_email_for_user
 from student.forms import send_password_reset_email_for_user
 from track import segment
@@ -90,19 +95,24 @@ def _do_third_party_auth(request):
 def _get_user_by_email(request):
     """
     Finds a user object in the database based on the given request, ignores all fields except for email.
+
+    Increase the user logic by phone number.
     """
     if 'email' not in request.POST or 'password' not in request.POST:
         raise AuthFailedError(_('There was an error receiving your login information. Please email us.'))
 
-    email = request.POST['email']
+    email_or_phone = request.POST['email']
 
     try:
-        return User.objects.get(email=email)
+        return User.objects.get(email=email_or_phone)
     except User.DoesNotExist:
-        if settings.FEATURES['SQUELCH_PII_IN_LOGS']:
-            AUDIT_LOG.warning(u"Login failed - Unknown user email")
-        else:
-            AUDIT_LOG.warning(u"Login failed - Unknown user email: {0}".format(email))
+        try:
+            return UserProfile.objects.get(phone=email_or_phone).user
+        except ObjectDoesNotExist:
+            if settings.FEATURES['SQUELCH_PII_IN_LOGS']:
+                AUDIT_LOG.warning(u"Login failed - Unknown user email or phone")
+            else:
+                AUDIT_LOG.warning(u"Login failed - Unknown user email or phone: {0}".format(email_or_phone))
 
 
 def _check_shib_redirect(user):
@@ -127,8 +137,8 @@ def _check_excessive_login_attempts(user):
     """
     if user and LoginFailures.is_feature_enabled():
         if LoginFailures.is_user_locked_out(user):
-            raise AuthFailedError(_('This account has been temporarily locked due '
-                                    'to excessive login failures. Try again later.'))
+            raise AuthFailedError(_('Due to multiple login failures, the account is temporarily locked.'
+                                    ' Please try again after 15 minutes.'))
 
 
 def _enforce_password_policy_compliance(request, user):
@@ -233,7 +243,7 @@ def _handle_failed_authentication(user):
         else:
             AUDIT_LOG.warning(u"Login failed - password for {0} is invalid".format(user.email))
 
-    raise AuthFailedError(_('Email or password is incorrect.'))
+    raise AuthFailedError(_('Login account or password is wrong.'))
 
 
 def _handle_successful_authentication_and_login(user, request):

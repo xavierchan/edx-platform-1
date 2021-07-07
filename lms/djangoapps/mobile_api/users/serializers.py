@@ -20,7 +20,8 @@ class CourseOverviewField(serializers.RelatedField):
     def to_representation(self, course_overview):
         course_id = unicode(course_overview.id)
         request = self.context.get('request')
-        api_version = self.context.get('api_version')
+        #api_version = self.context.get('api_version')
+        api_version = 'v1'
 
         return {
             # identifiers
@@ -136,7 +137,8 @@ class UserSerializer(serializers.ModelSerializer):
 
     def get_course_enrollments(self, model):
         request = self.context.get('request')
-        api_version = self.context.get('api_version')
+        #api_version = self.context.get('api_version')
+        api_version = 'v1'
 
         return reverse(
             'courseenrollment-detail',

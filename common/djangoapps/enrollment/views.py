@@ -1,3 +1,4 @@
+# -*- coding:utf-8 -*-
 """
 The Enrollment API Views should be simple, lean HTTP endpoints for API access. This should
 consist primarily of authentication, request validation, and serialization.
@@ -7,6 +8,10 @@ import logging
 
 from course_modes.models import CourseMode
 from django.core.exceptions import ObjectDoesNotExist, ValidationError
+from django.conf import settings
+from django.db import transaction
+from django.contrib.auth import get_user_model
+from django.core.exceptions import ObjectDoesNotExist
 from django.utils.decorators import method_decorator
 from edx_rest_framework_extensions.auth.jwt.authentication import JwtAuthentication
 from edx_rest_framework_extensions.auth.session.authentication import SessionAuthenticationAllowInactiveUser
@@ -46,6 +51,7 @@ from student.auth import user_has_role
 from student.models import CourseEnrollment, User
 from student.roles import CourseStaffRole, GlobalStaff
 from util.disable_rate_limit import can_disable_rate_limit
+
 
 log = logging.getLogger(__name__)
 REQUIRED_ATTRIBUTES = {
@@ -688,16 +694,6 @@ class EnrollmentListView(APIView, ApiKeyPermissionMixIn):
             # other users, do not let them deduce the existence of an enrollment.
             return Response(status=status.HTTP_404_NOT_FOUND)
 
-        if mode not in (CourseMode.AUDIT, CourseMode.HONOR, None) and not has_api_key_permissions:
-            return Response(
-                status=status.HTTP_403_FORBIDDEN,
-                data={
-                    "message": u"User does not have permission to create enrollment with mode [{mode}].".format(
-                        mode=mode
-                    )
-                }
-            )
-
         try:
             # Lookup the user, instead of using request.user, since request.user may not match the username POSTed.
             user = User.objects.get(username=username)
@@ -706,6 +702,22 @@ class EnrollmentListView(APIView, ApiKeyPermissionMixIn):
                 status=status.HTTP_406_NOT_ACCEPTABLE,
                 data={
                     'message': u'The user {} does not exist.'.format(username)
+                }
+            )
+
+        can_vip_enroll = False
+        if settings.FEATURES.get('ENABLE_MEMBERSHIP_INTEGRATION'):
+            from membership.models import VIPCourseEnrollment
+            can_vip_enroll = VIPCourseEnrollment.can_vip_enroll(user, course_id)
+        
+        is_ecommerce_request = mode not in (CourseMode.AUDIT, CourseMode.HONOR, None)
+        if is_ecommerce_request and not has_api_key_permissions and not can_vip_enroll:
+            return Response(
+                status=status.HTTP_403_FORBIDDEN,
+                data={
+                    "message": u"User does not have permission to create enrollment with mode [{mode}].".format(
+                        mode=mode
+                    )
                 }
             )
 
@@ -790,7 +802,9 @@ class EnrollmentListView(APIView, ApiKeyPermissionMixIn):
                     unicode(course_id),
                     mode=mode,
                     is_active=is_active,
-                    enrollment_attributes=enrollment_attributes
+                    enrollment_attributes=enrollment_attributes,
+                    user=user,
+                    is_ecommerce_request=is_ecommerce_request
                 )
 
             cohort_name = request.data.get('cohort')

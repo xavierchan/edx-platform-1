@@ -1,1 +1,1 @@
-django==1.11.20
+git+https://github.com/jauzzz/django.git@1.11.20#egg=django==1.11.20

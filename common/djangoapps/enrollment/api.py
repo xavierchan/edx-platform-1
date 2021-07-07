@@ -1,3 +1,4 @@
+# -*- coding:utf-8 -*-
 """
 Enrollment API for creating, updating, and deleting enrollments. Also provides access to enrollment information at a
 course level, such as available course modes.
@@ -8,10 +9,12 @@ import logging
 
 from django.conf import settings
 from django.core.cache import cache
+from django.db import transaction
 from opaque_keys.edx.keys import CourseKey
 
 from course_modes.models import CourseMode
 from enrollment import errors
+from enrollment.errors import UserNotFoundError
 
 log = logging.getLogger(__name__)
 
@@ -143,7 +146,8 @@ def get_enrollment(user_id, course_id):
     return _data_api().get_course_enrollment(user_id, course_id)
 
 
-def add_enrollment(user_id, course_id, mode=None, is_active=True, enrollment_attributes=None):
+def add_enrollment(user_id, course_id, mode=None, is_active=True, enrollment_attributes=None,
+                   user=None, is_ecommerce_request=False):
     """Enrolls a user in a course.
 
     Enrolls a user in a course. If the mode is not specified, this will default to `CourseMode.DEFAULT_MODE_SLUG`.
@@ -194,10 +198,42 @@ def add_enrollment(user_id, course_id, mode=None, is_active=True, enrollment_att
     if mode is None:
         mode = _default_course_mode(course_id)
     validate_course_mode(course_id, mode, is_active=is_active)
-    enrollment = _data_api().create_course_enrollment(user_id, course_id, mode, is_active)
 
-    if enrollment_attributes is not None:
-        set_enrollment_attributes(user_id, course_id, enrollment_attributes)
+    if settings.FEATURES.get('ENABLE_MEMBERSHIP_INTEGRATION') and is_ecommerce_request:
+        from membership.models import VIPCourseEnrollment
+        course_key = CourseKey.from_string(course_id)
+        VIPCourseEnrollment.objects.filter(user=user, course_id=course_key).update(is_active=False)
+
+    with transaction.atomic():
+        enrollment = _data_api().create_course_enrollment(user_id, course_id, mode, is_active)
+
+        if enrollment_attributes is not None:
+            set_enrollment_attributes(user_id, course_id, enrollment_attributes)
+
+        if settings.FEATURES.get('ENABLE_MEMBERSHIP_INTEGRATION', False) and not is_ecommerce_request:
+            from membership.models import VIPCourseEnrollment
+            from student.models import User
+
+            if user is None:
+                try:
+                    user = User.objects.get(username=user_id)
+                except User.DoesNotExist:
+                    msg = u"Not user with username '{username}' found.".format(username=user_id)
+                    log.warn(msg)
+                    raise UserNotFoundError(msg)
+
+            course_key = CourseKey.from_string(course_id)
+            can_vip_enroll = VIPCourseEnrollment.can_vip_enroll(user, course_key)
+            if mode in ('professional', 'no-id-professional', 'verified'):
+                if not can_vip_enroll:
+                    msg = u"Sorry, your VIP has expired."
+                    error_data = {
+                        'mode': mode,
+                        'can_vip_enroll': can_vip_enroll
+                    }
+                    raise errors.CourseModeNotFoundError(msg, error_data)
+                else:
+                    VIPCourseEnrollment.enroll(user, course_key)
 
     return enrollment
 
@@ -404,6 +440,14 @@ def _default_course_mode(course_id):
     """
     course_modes = CourseMode.modes_for_course(CourseKey.from_string(course_id))
     available_modes = [m.slug for m in course_modes]
+
+    if settings.FEATURES.get('ENABLE_MEMBERSHIP_INTEGRATION', False):
+        if 'professional' in available_modes:
+            return 'professional'
+        elif 'no-id-professional' in available_modes:
+            return 'no-id-professional'
+        elif 'verified' in available_modes:
+            return 'verified'
 
     if CourseMode.DEFAULT_MODE_SLUG in available_modes:
         return CourseMode.DEFAULT_MODE_SLUG

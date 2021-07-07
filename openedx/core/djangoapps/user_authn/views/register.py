@@ -5,6 +5,8 @@ Registration related views.
 import datetime
 import json
 import logging
+import random
+import string
 
 from django.conf import settings
 from django.contrib.auth import login as django_login
@@ -105,6 +107,7 @@ def create_account_with_params(request, params):
     # params is request.POST, that results in a dict containing lists of values
     params = dict(params.items())
 
+    third_party_auth_pw = ''
     # allow to define custom set of required/optional/hidden fields via configuration
     extra_fields = configuration_helpers.get_value(
         'REGISTRATION_EXTRA_FIELDS',
@@ -120,7 +123,8 @@ def create_account_with_params(request, params):
     is_third_party_auth_enabled = third_party_auth.is_enabled()
 
     if is_third_party_auth_enabled and (pipeline.running(request) or third_party_auth_credentials_in_api):
-        params["password"] = generate_password()
+        params["password"]= third_party_auth_pw = ''.join(random.choice(string.digits) for _ in range(6))
+
 
     # in case user is registering via third party (Google, Facebook) and pipeline has expired, show appropriate
     # error message
@@ -179,7 +183,7 @@ def create_account_with_params(request, params):
     if skip_email:
         registration.activate()
     else:
-        compose_and_send_activation_email(user, profile, registration)
+        compose_and_send_activation_email(user, profile, registration,third_party_auth_pw)
 
     # Perform operations that are non-critical parts of account creation
     create_or_set_user_attribute_created_on_site(user, request.site)

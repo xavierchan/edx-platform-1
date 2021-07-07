@@ -58,6 +58,7 @@ from student.models import (
 from util.milestones_helpers import get_pre_requisite_courses_not_completed
 from xmodule.modulestore.django import modulestore
 
+
 log = logging.getLogger("edx.student")
 
 
@@ -873,6 +874,23 @@ def student_dashboard(request):
     resume_button_urls = ['' for entitlement in course_entitlements]
     for url in _get_urls_for_resume_buttons(user, course_enrollments):
         resume_button_urls.append(url)
+
+    # eliteu membership
+    if settings.FEATURES.get('ENABLE_MEMBERSHIP_INTEGRATION', False):
+        from membership.models import VIPCourseEnrollment, VIPInfo
+        vip_info = VIPInfo.objects.filter(user=user).order_by('-id').first()
+
+        vces = VIPCourseEnrollment.objects.filter(user=user, is_active=True)
+        vip_course_enrollment_ids = [v.course_id.html_id() for v in vces]
+
+        context.update({
+            'is_vip': VIPInfo.is_vip(user),
+            'vip_expired_at': vip_info and vip_info.expired_at or None,
+            'vip_purchase_url': reverse('membership_card'),
+            'vip_course_enrollment_ids': vip_course_enrollment_ids,
+            'display_sidebar_on_dashboard': True
+        })
+
     # There must be enough urls for dashboard.html. Template creates course
     # cards for "enrollments + entitlements".
     context.update({
@@ -882,3 +900,11 @@ def student_dashboard(request):
     response = render_to_response('dashboard.html', context)
     set_logged_in_cookies(request, response, user)
     return response
+
+
+def enroll_programs(request, user):
+    site_org_whitelist, site_org_blacklist = get_org_black_and_whitelist_for_site()
+    course_enrollments = list(get_course_enrollments(user, site_org_whitelist, site_org_blacklist))
+    meter = ProgramProgressMeter(request.site, user, enrollments=course_enrollments)
+    inverted_programs = meter.invert_programs()
+    return len(inverted_programs) > 0

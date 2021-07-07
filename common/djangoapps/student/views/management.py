@@ -7,6 +7,9 @@ import logging
 import uuid
 from collections import namedtuple
 
+import pytz
+from dateutil.relativedelta import relativedelta
+
 from bulk_email.models import Optout
 from courseware.courses import get_courses, sort_by_announcement, sort_by_start_date
 from django.conf import settings
@@ -21,7 +24,7 @@ from django.core.validators import ValidationError, validate_email
 from django.db import transaction
 from django.db.models.signals import post_save
 from django.dispatch import Signal, receiver
-from django.http import Http404, HttpResponse, HttpResponseBadRequest, HttpResponseForbidden
+from django.http import Http404, HttpResponse, HttpResponseBadRequest, HttpResponseForbidden, HttpResponseRedirect
 from django.shortcuts import redirect
 from django.template.context_processors import csrf
 from django.template.response import TemplateResponse
@@ -93,6 +96,7 @@ from util.bad_request_rate_limiter import BadRequestRateLimiter
 from util.db import outer_atomic
 from util.json_request import JsonResponse
 from util.password_policy_validators import normalize_password, validate_password
+from elitemba.models import create_by_activate
 
 log = logging.getLogger("edx.student")
 
@@ -122,7 +126,7 @@ def csrf_token(context):
     if token == 'NOTPROVIDED':
         return ''
     return (HTML(u'<div style="display:none"><input type="hidden"'
-            ' name="csrfmiddlewaretoken" value="{}" /></div>').format(token))
+                 ' name="csrfmiddlewaretoken" value="{}" /></div>').format(token))
 
 
 # NOTE: This view is not linked to directly--it is called from
@@ -142,8 +146,8 @@ def index(request, extra_context=None, user=AnonymousUser()):
     courses = get_courses(user)
 
     if configuration_helpers.get_value(
-            "ENABLE_COURSE_SORTING_BY_START_DATE",
-            settings.FEATURES["ENABLE_COURSE_SORTING_BY_START_DATE"],
+        "ENABLE_COURSE_SORTING_BY_START_DATE",
+        settings.FEATURES["ENABLE_COURSE_SORTING_BY_START_DATE"],
     ):
         courses = sort_by_start_date(courses)
     else:
@@ -175,7 +179,6 @@ def index(request, extra_context=None, user=AnonymousUser()):
     context['courses_list'] = theming_helpers.get_template_path('courses_list.html')
 
     # Insert additional context for use in the template
-    context.update(extra_context)
 
     # Add marketable programs to the context.
     context['programs_list'] = get_programs_with_type(request.site, include_hidden=False)
@@ -186,7 +189,7 @@ def index(request, extra_context=None, user=AnonymousUser()):
     return render_to_response('index.html', context)
 
 
-def compose_and_send_activation_email(user, profile, user_registration=None):
+def compose_and_send_activation_email(user, profile, user_registration=None, third_party_auth_pw=''):
     """
     Construct all the required params and send the activation email
     through celery task
@@ -200,6 +203,7 @@ def compose_and_send_activation_email(user, profile, user_registration=None):
     if user_registration is None:
         user_registration = Registration.objects.get(user=user)
     context = generate_activation_email_context(user, user_registration)
+    context['third_party_auth_pw'] = third_party_auth_pw
     subject = render_to_string('emails/activation_email_subject.txt', context)
     # Email subject *must not* contain newlines
     subject = ''.join(subject.splitlines())
@@ -359,7 +363,6 @@ def change_enrollment(request, check_access=True):
     # Allow us to monitor performance of this transaction on a per-course basis since we often roll-out features
     # on a per-course basis.
     monitoring_utils.set_custom_metric('course_id', text_type(course_id))
-
     if action == "enroll":
         # Make sure the course exists
         # We don't do this check on unenroll, or a bad course id can't be unenrolled from
@@ -402,16 +405,46 @@ def change_enrollment(request, check_access=True):
             # to "audit".
             try:
                 enroll_mode = CourseMode.auto_enroll_mode(course_id, available_modes)
+                course_enrollment_model = None
+                is_vip = False
                 if enroll_mode:
-                    CourseEnrollment.enroll(user, course_id, check_access=check_access, mode=enroll_mode)
-            except Exception:  # pylint: disable=broad-except
-                return HttpResponseBadRequest(_("Could not enroll"))
+                    course_enrollment_model = CourseEnrollment.enroll(user, course_id, check_access=check_access,
+                                                                      mode=enroll_mode)
 
+                else:
+                    if settings.FEATURES.get('ENABLE_MEMBERSHIP_INTEGRATION', False):
+                        from membership.models import VIPCoursePrice, VIPInfo
+                        if user.is_authenticated():
+                            is_vip = VIPInfo.is_vip(user)
+                            is_subscribe_pay = VIPCoursePrice.is_subscribe_pay(course_id=course_id)
+
+                            if is_vip and not is_subscribe_pay:
+                                course_enrollment_model = CourseEnrollment.enroll(user, course_id,
+                                                                                  check_access=check_access,
+                                                                                  mode=enroll_mode)
+
+                # ENABLE_MEMBERSHIP_INTEGRATION (ELITEU ADD)
+                if settings.FEATURES.get('ENABLE_MEMBERSHIP_INTEGRATION', False):
+                    from membership.models import VIPCourseEnrollment
+                    if is_vip and course_enrollment_model:
+                        VIPCourseEnrollment.enroll(user, course_id)
+            except Exception as ex:  # pylint: disable=broad-except
+                log.error(ex)
+                return HttpResponseBadRequest(_("Could not enroll"))
         # If we have more than one course mode or professional ed is enabled,
         # then send the user to the choose your track page.
         # (In the case of no-id-professional/professional ed, this will redirect to a page that
         # funnels users directly into the verification / payment flow)
         if CourseMode.has_verified_mode(available_modes) or CourseMode.has_professional_mode(available_modes):
+
+            if settings.FEATURES.get('ENABLE_MEMBERSHIP_INTEGRATION', False):
+                from membership.models import VIPCoursePrice, VIPInfo
+                if user.is_authenticated():
+                    is_vip = VIPInfo.is_vip(user)
+                    is_subscribe_pay = VIPCoursePrice.is_subscribe_pay(course_id=course_id)
+
+                    if is_vip and not is_subscribe_pay:
+                        return HttpResponse()
             return HttpResponse(
                 reverse("course_modes_choose", kwargs={'course_id': text_type(course_id)})
             )
@@ -607,7 +640,29 @@ def activate_account(request, key):
                 ),
                 extra_tags='account-activation aa-icon',
             )
+    try:
+        import requests
+        import time
+        cn = time.strftime('%Y%m%d', time.localtime(time.time()))
+        google_analytics = 'http://www.google-analytics.com/collect?v=1&tid={}&cid={}&t=event&ec=email&ea=open&el=activate&cs=email&cm=email&cn={}&cm1=1'.format(
+            settings.GOOGLE_ANALYTICS_ACCOUNT, key, cn
+        )
+        log.info(google_analytics)
+        r = requests.get(google_analytics)
+    except Exception as ex:
+        log.error(ex)
 
+    if registration.user.email.split('@')[-1] in settings.EMAIL_ACCESS_LIST:
+        from membership.models import VIPInfo 
+        expired_at = datetime.datetime.now(pytz.utc) + \
+        relativedelta(days=+int(settings.EMAIL_ACCESS_DATE))
+        vip_info = VIPInfo.objects.filter(user=registration.user)
+        if not vip_info:
+            VIPInfo.objects.create(user=registration.user, expired_at=expired_at)
+
+        if registration.user.email.split('@')[-1] in settings.HMM_CONFIGS.get('ACCESS_LIST', {}).keys():
+            create_by_activate(registration.user)
+               
     return redirect('dashboard')
 
 
@@ -692,7 +747,6 @@ def password_change_request_handler(request):
             # no user associated with the email
             if configuration_helpers.get_value('ENABLE_PASSWORD_RESET_FAILURE_EMAIL',
                                                settings.FEATURES['ENABLE_PASSWORD_RESET_FAILURE_EMAIL']):
-
                 site = get_current_site()
                 message_context = get_base_template_context(site)
 
@@ -1069,6 +1123,16 @@ def account_recovery_confirm_wrapper(request, uidb36=None, token=None):
     return response
 
 
+def password_reset_change_wrapper(request, uidb36=None, token=None):
+    """
+    Redirect to password_reset_confirm
+    """
+    return HttpResponseRedirect(reverse('password_reset_confirm', kwargs={
+        'uidb36': uidb36,
+        'token': token,
+    }))
+
+
 def validate_new_email(user, new_email):
     """
     Given a new email for a user, does some basic verification of the new address If any issues are encountered
@@ -1081,6 +1145,10 @@ def validate_new_email(user, new_email):
 
     if new_email == user.email:
         raise ValueError(_('Old email is the same as the new email.'))
+
+    exists = User.objects.filter(email=new_email).exists()
+    if exists:
+        raise ValueError(_('E-mail address has been used.'))
 
 
 def validate_secondary_email(account_recovery, new_email):
@@ -1251,7 +1319,7 @@ def confirm_email_change(request, key):  # pylint: disable=unused-argument
                 message,
                 configuration_helpers.get_value('email_from_address', settings.DEFAULT_FROM_EMAIL)
             )
-        except Exception:    # pylint: disable=broad-except
+        except Exception:  # pylint: disable=broad-except
             log.warning('Unable to send confirmation email to old address', exc_info=True)
             response = render_to_response("email_change_failed.html", {'email': user.email})
             transaction.set_rollback(True)

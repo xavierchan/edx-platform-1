@@ -136,6 +136,9 @@ class TrackMiddleware(object):
             'user_id': self.get_user_primary_key(request),
             'username': self.get_username(request),
             'ip': self.get_request_ip_address(request),
+            'nickname': self.get_user_nickname(request),
+            'phone': self.get_user_phone(request),
+            'port' : request.META['SERVER_PORT'] if request.META['SERVER_PORT'] else '',
         }
         for header_name, context_key in META_KEY_TO_CONTEXT_KEY.iteritems():
             # HTTP headers may contain Latin1 characters. Decoding using Latin1 encoding here
@@ -195,6 +198,21 @@ class TrackMiddleware(object):
         """Gets the username of the logged in Django user"""
         try:
             return request.user.username
+        except AttributeError:
+            return ''
+
+    def get_user_nickname(self, request):
+        """Gets the user nickname of the logged in Django user"""
+        try:
+            return request.user.profile.name
+        except AttributeError:
+            return ''
+
+    def get_user_phone(self, request):
+        """Gets the user phone of the logged in Django user"""
+        try:
+            phone = request.user.profile.phone
+            return phone if phone is not None else ''
         except AttributeError:
             return ''
 

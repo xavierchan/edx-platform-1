@@ -114,7 +114,7 @@ class EcommerceService(object):
         """
         program_uuid = kwargs.get('program_uuid')
         enterprise_catalog_uuid = kwargs.get('catalog')
-        query_params = {'sku': skus}
+        query_params = {'sku': skus, 'username': kwargs.get('username')}
         if enterprise_catalog_uuid:
             query_params.update({'catalog': enterprise_catalog_uuid})
 

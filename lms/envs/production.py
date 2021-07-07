@@ -28,7 +28,7 @@ from path import Path as path
 from xmodule.modulestore.modulestore_settings import convert_module_store_setting_if_needed
 from openedx.core.djangoapps.plugins import plugin_settings, constants as plugin_constants
 
-from .common import *
+from .eliteu_common import *
 from openedx.core.lib.derived import derive_settings  # pylint: disable=wrong-import-order
 from openedx.core.lib.logsettings import get_logger_config  # pylint: disable=wrong-import-order
 
@@ -154,6 +154,8 @@ EMAIL_BACKEND = ENV_TOKENS.get('EMAIL_BACKEND', EMAIL_BACKEND)
 EMAIL_FILE_PATH = ENV_TOKENS.get('EMAIL_FILE_PATH', None)
 EMAIL_HOST = ENV_TOKENS.get('EMAIL_HOST', 'localhost')  # django default is localhost
 EMAIL_PORT = ENV_TOKENS.get('EMAIL_PORT', 25)  # django default is 25
+EMAIL_ACCESS_LIST = ENV_TOKENS.get('EMAIL_ACCESS_LIST', ["hh.global"])
+EMAIL_ACCESS_DATE = ENV_TOKENS.get('EMAIL_ACCESS_DATE', 365)
 EMAIL_USE_TLS = ENV_TOKENS.get('EMAIL_USE_TLS', False)  # django default is False
 SITE_NAME = ENV_TOKENS['SITE_NAME']
 HTTPS = ENV_TOKENS.get('HTTPS', HTTPS)

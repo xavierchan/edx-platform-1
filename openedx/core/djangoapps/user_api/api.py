@@ -5,6 +5,7 @@ from django.conf import settings
 from django.core.exceptions import ImproperlyConfigured
 from django.urls import reverse
 from django.utils.translation import ugettext as _
+from django.utils.translation import pgettext
 from django_countries import countries
 
 import accounts
@@ -39,7 +40,7 @@ def get_password_reset_form():
 
     # Translators: This label appears above a field on the password reset
     # form meant to hold the user's email address.
-    email_label = _(u"Email")
+    email_label = pgettext("Register and Login", u"Email")
 
     # Translators: This example email address is used as a placeholder in
     # a field on the password reset form meant to hold the user's email address.
@@ -133,15 +134,15 @@ def get_login_session_form(request):
 
     # Translators: This label appears above a field on the login form
     # meant to hold the user's email address.
-    email_label = _(u"Email")
+    email_label = pgettext("Register and Login", u"Email or Phone Number")
 
     # Translators: This example email address is used as a placeholder in
     # a field on the login form meant to hold the user's email address.
-    email_placeholder = _(u"username@domain.com")
+    email_placeholder = _(u"")
 
     # Translators: These instructions appear on the login form, immediately
     # below a field meant to hold the user's email address.
-    email_instructions = _("The email address you used to register with {platform_name}").format(
+    email_instructions = _("The email address you registered on {platform_name}, or the phone number that is bound.").format(
         platform_name=configuration_helpers.get_value('PLATFORM_NAME', settings.PLATFORM_NAME)
     )
 
@@ -152,8 +153,6 @@ def get_login_session_form(request):
         placeholder=email_placeholder,
         instructions=email_instructions,
         restrictions={
-            "min_length": accounts.EMAIL_MIN_LENGTH,
-            "max_length": accounts.EMAIL_MAX_LENGTH,
         }
     )
 
@@ -360,7 +359,7 @@ class RegistrationFormFactory(object):
         """
         # Translators: This label appears above a field on the registration form
         # meant to hold the user's email address.
-        email_label = _(u"Email")
+        email_label = pgettext("Register and Login", u"Email")
 
         # Translators: These instructions appear on the registration form, immediately
         # below a field meant to hold the user's email address.
@@ -482,7 +481,7 @@ class RegistrationFormFactory(object):
         """
         # Translators: This label appears above a dropdown menu on the registration
         # form used to select the user's highest completed level of education.
-        education_level_label = _(u"Highest level of education completed")
+        education_level_label = _(u"Highest Level of Education Completed")
         error_msg = accounts.REQUIRED_FIELD_LEVEL_OF_EDUCATION_MSG
 
         # The labels are marked for translation in UserProfile model definition.
@@ -530,7 +529,7 @@ class RegistrationFormFactory(object):
         """
         # Translators: This label appears above a dropdown menu on the registration
         # form used to select the user's year of birth.
-        yob_label = _(u"Year of birth")
+        yob_label = _(u"Year of Birth")
 
         options = [(unicode(year), unicode(year)) for year in UserProfile.VALID_YEARS]
         form_desc.add_field(
@@ -864,27 +863,58 @@ class RegistrationFormFactory(object):
             platform_name=configuration_helpers.get_value("PLATFORM_NAME", settings.PLATFORM_NAME),
             terms_of_service=terms_label
         )
+        error_msg = _(u"Account can only be created after you agree to our User Agreement, Disclaimer and Privacy Policy.")
         field_type = 'checkbox'
 
         if not separate_honor_and_tos:
             current_request = crum.get_current_request()
 
             field_type = 'plaintext'
+            field_type = 'checkbox'
 
             pp_link = marketing_link("PRIVACY")
+
+            user_agreement_url = marketing_link("USER_AGREEMENT")
+            disclaimer_url = marketing_link("DISCLAIMER")
+
             label = Text(_(
-                u"By creating an account with {platform_name}, you agree \
-                  to abide by our {platform_name} \
-                  {terms_of_service_link_start}{terms_of_service}{terms_of_service_link_end} \
-                  and agree to our {privacy_policy_link_start}Privacy Policy{privacy_policy_link_end}."
+                u"By checking this box, you agree \
+                  to abide by EliteMBA's \
+                  {user_agreement_link_start}{user_agreement}{user_agreement_link_end}, {disclaimer_link_start}{disclaimer}{disclaimer_link_end} \
+                  and {privacy_policy_link_start}Privacy Policy{privacy_policy_link_end}."
             )).format(
-                platform_name=configuration_helpers.get_value("PLATFORM_NAME", settings.PLATFORM_NAME),
                 terms_of_service=terms_label,
-                terms_of_service_link_start=HTML("<a href='{terms_url}' target='_blank'>").format(terms_url=terms_link),
-                terms_of_service_link_end=HTML("</a>"),
+                user_agreement=_(u"User Agreement"),
+                disclaimer=_(u"Disclaimer"),
+                user_agreement_link_start=HTML("<a href='{user_agreement_url}' target='_blank'>").format(
+                    user_agreement_url=user_agreement_url),
+                user_agreement_link_end=HTML("</a>"),
+                disclaimer_link_start=HTML("<a href='{disclaimer_url}' target='_blank'>").format(
+                    disclaimer_url=disclaimer_url),
+                disclaimer_link_end=HTML("</a>"),
                 privacy_policy_link_start=HTML("<a href='{pp_url}' target='_blank'>").format(pp_url=pp_link),
                 privacy_policy_link_end=HTML("</a>"),
             )
+
+            # label = Text(_(
+            #     u"By creating an account with {platform_name}, you agree \
+            #       to abide by our {platform_name} \
+            #       {user_agreement_link_start}{user_agreement}{user_agreement_link_end}, {disclaimer_link_start}{disclaimer}{disclaimer_link_end} \
+            #       and agree to our {privacy_policy_link_start}Privacy Policy{privacy_policy_link_end}."
+            # )).format(
+            #     platform_name=configuration_helpers.get_value("PLATFORM_NAME", settings.PLATFORM_NAME),
+            #     terms_of_service=terms_label,
+            #     user_agreement=_(u"User Agreement"),
+            #     disclaimer=_(u"Disclaimer"),
+            #     user_agreement_link_start=HTML("<a href='{user_agreement_url}' target='_blank'>").format(
+            #         user_agreement_url=user_agreement_url),
+            #     user_agreement_link_end=HTML("</a>"),
+            #     disclaimer_link_start=HTML("<a href='{disclaimer_url}' target='_blank'>").format(
+            #         disclaimer_url=disclaimer_url),
+            #     disclaimer_link_end=HTML("</a>"),
+            #     privacy_policy_link_start=HTML("<a href='{pp_url}' target='_blank'>").format(pp_url=pp_link),
+            #     privacy_policy_link_end=HTML("</a>"),
+            # )
 
         form_desc.add_field(
             "honor_code",
