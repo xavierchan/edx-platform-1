@@ -863,12 +863,14 @@ class RegistrationFormFactory(object):
             platform_name=configuration_helpers.get_value("PLATFORM_NAME", settings.PLATFORM_NAME),
             terms_of_service=terms_label
         )
+        error_msg = _(u"Account can only be created after you agree to our User Agreement, Disclaimer and Privacy Policy.")
         field_type = 'checkbox'
 
         if not separate_honor_and_tos:
             current_request = crum.get_current_request()
 
             field_type = 'plaintext'
+            field_type = 'checkbox'
 
             pp_link = marketing_link("PRIVACY")
 
@@ -876,7 +878,7 @@ class RegistrationFormFactory(object):
             disclaimer_url = marketing_link("DISCLAIMER")
 
             label = Text(_(
-                u"By creating an account, you agree \
+                u"By checking this box, you agree \
                   to abide by EliteMBA's \
                   {user_agreement_link_start}{user_agreement}{user_agreement_link_end}, {disclaimer_link_start}{disclaimer}{disclaimer_link_end} \
                   and {privacy_policy_link_start}Privacy Policy{privacy_policy_link_end}."

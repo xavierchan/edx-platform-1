@@ -121,7 +121,7 @@ class CourseHomeFragmentView(EdxFragmentView):
         # Unenrolled users who are not course or global staff are given only a subset.
         enrollment = CourseEnrollment.get_enrollment(request.user, course_key)
         can_view_course = True
-        if settings.FEATURES.get('ENABLE_MEMBERSHIP_INTEGRATION', False):
+        if settings.FEATURES.get('ENABLE_MEMBERSHIP_INTEGRATION', False) and request.user.is_authenticated():
             from membership.models import VIPInfo
             can_view_course = VIPInfo.can_view_course(request.user, course_key)
         user_access = {

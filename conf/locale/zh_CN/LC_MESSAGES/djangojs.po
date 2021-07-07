@@ -1,49 +1,63 @@
 # #-#-#-#-#  djangojs-partial.po (0.1a)  #-#-#-#-#
 # edX community translations have been downloaded from Chinese (China) (https://www.transifex.com/e-ducation/teams/93939/zh_CN/).
-# Copyright (C) 2019 EdX
+# Copyright (C) 2020 EdX
 # This file is distributed under the GNU AFFERO GENERAL PUBLIC LICENSE.
-# EdX Team <info@edx.org>, 2019.
+# EdX Team <info@edx.org>, 2020.
 #
 # Translators:
-# 嘉杰 李 <jj.li@eliteu.com.cn>, 2018
-# 微 李 <w.li@eliteu.com.cn>, 2018
-# 婕 高 <j.gao@eliteu.cn>, 2018
-# 家璧 刘 <jb.liu@eliteu.com.cn>, 2018
 # li ying <code@eliteu.cn>, 2019
 #
 # #-#-#-#-#  djangojs-studio.po (0.1a)  #-#-#-#-#
 # edX community translations have been downloaded from Chinese (China) (https://www.transifex.com/e-ducation/teams/93939/zh_CN/).
-# Copyright (C) 2019 EdX
+# Copyright (C) 2020 EdX
 # This file is distributed under the GNU AFFERO GENERAL PUBLIC LICENSE.
-# EdX Team <info@edx.org>, 2019.
+# EdX Team <info@edx.org>, 2020.
 #
 # Translators:
 # li ying <code@eliteu.cn>, 2019
 #
 # #-#-#-#-#  underscore.po (0.1a)  #-#-#-#-#
 # edX community translations have been downloaded from Chinese (China) (https://www.transifex.com/e-ducation/teams/93939/zh_CN/)
-# Copyright (C) 2019 edX
+# Copyright (C) 2020 edX
 # This file is distributed under the GNU AFFERO GENERAL PUBLIC LICENSE.
-# EdX Team <info@edx.org>, 2019.
+# EdX Team <info@edx.org>, 2020.
 #
 # Translators:
-# 微 李 <w.li@eliteu.com.cn>, 2018
+# Sushan Wu <ss.wu@eliteu.com.cn>, 2019
 # li ying <code@eliteu.cn>, 2019
 #
 # #-#-#-#-#  underscore-studio.po (0.1a)  #-#-#-#-#
 # edX community translations have been downloaded from Chinese (China) (https://www.transifex.com/e-ducation/teams/93939/zh_CN/)
-# Copyright (C) 2019 edX
+# Copyright (C) 2020 edX
 # This file is distributed under the GNU AFFERO GENERAL PUBLIC LICENSE.
-# EdX Team <info@edx.org>, 2019.
+# EdX Team <info@edx.org>, 2020.
 #
 # Translators:
 # li ying <code@eliteu.cn>, 2019
 #
-# #-#-#-#-#  membership-js.po (0.1a)  #-#-#-#-#
+# #-#-#-#-#  membership-js.po (PACKAGE VERSION)  #-#-#-#-#
+# SOME DESCRIPTIVE TITLE.
+# Copyright (C) YEAR THE PACKAGE'S COPYRIGHT HOLDER
+# This file is distributed under the same license as the PACKAGE package.
+# FIRST AUTHOR <EMAIL@ADDRESS>, YEAR.
+#
+# Translators:
+# li ying <code@eliteu.cn>, 2019
+#
+# #-#-#-#-#  djangojs-theme.po (0.1a)  #-#-#-#-#
 # edX community translations have been downloaded from Chinese (China) (https://www.transifex.com/e-ducation/teams/93939/zh_CN/).
-# Copyright (C) 2019 EdX
+# Copyright (C) 2020 EdX
 # This file is distributed under the GNU AFFERO GENERAL PUBLIC LICENSE.
-# EdX Team <info@edx.org>, 2019.
+# EdX Team <info@edx.org>, 2020.
+#
+# Translators:
+# li ying <code@eliteu.cn>, 2019
+#
+# #-#-#-#-#  underscore-theme.po (0.1a)  #-#-#-#-#
+# edX community translations have been downloaded from Chinese (China) (https://www.transifex.com/e-ducation/teams/93939/zh_CN/)
+# Copyright (C) 2020 edX
+# This file is distributed under the GNU AFFERO GENERAL PUBLIC LICENSE.
+# EdX Team <info@edx.org>, 2020.
 #
 # Translators:
 # li ying <code@eliteu.cn>, 2019
@@ -52,8 +66,8 @@ msgid ""
 msgstr ""
 "Project-Id-Version: 0.1a\n"
 "Report-Msgid-Bugs-To: openedx-translation@googlegroups.com\n"
-"POT-Creation-Date: 2019-01-15 19:13+0800\n"
-"PO-Revision-Date: 2018-12-07 12:23+0000\n"
+"POT-Creation-Date: 2020-01-10 17:58+0800\n"
+"PO-Revision-Date: 2019-06-19 06:25+0000\n"
 "Last-Translator: li ying <code@eliteu.cn>, 2019\n"
 "Language-Team: Chinese (China) (https://www.transifex.com/e-ducation/teams/93939/zh_CN/)\n"
 "Language: zh_CN\n"
@@ -62,7 +76,6 @@ msgstr ""
 "Content-Transfer-Encoding: 8bit\n"
 "Plural-Forms: nplurals=1; plural=0;\n"
 "Generated-By: Babel 1.3\n"
-"#-#-#-#-#  membership-js.po (0.1a)  #-#-#-#-#\n"
 
 #: cms/static/cms/js/xblock/cms.runtime.v1.js
 #: cms/static/js/certificates/views/signatory_details.js
@@ -116,7 +129,6 @@ msgstr "删除"
 #: common/static/common/js/components/utils/view_utils.js
 #: lms/static/js/Markdown.Editor.js
 #: lms/static/js/student_account/components/StudentAccountDeletionModal.jsx
-#: lms/static/js/writable_gradebook.js
 #: cms/templates/js/add-xblock-component-menu-problem.underscore
 #: cms/templates/js/add-xblock-component-menu.underscore
 #: cms/templates/js/certificate-editor.underscore
@@ -173,6 +185,7 @@ msgstr "关闭"
 #: cms/templates/js/previous-video-upload-list.underscore
 #: cms/templates/js/signatory-details.underscore
 #: lms/templates/instructor/instructor_dashboard_2/certificate-white-list.underscore
+#: themes/elitemba-theme/lms/templates/instructor/instructor_dashboard_2/certificate-white-list.underscore
 msgid "Name"
 msgstr "姓名"
 
@@ -239,7 +252,6 @@ msgstr "上传文件"
 #: cms/static/js/views/modals/base_modal.js
 #: cms/static/js/views/modals/course_outline_modals.js
 #: common/lib/xmodule/xmodule/js/src/html/edit.js
-#: lms/static/js/writable_gradebook.js
 #: cms/templates/js/certificate-editor.underscore
 #: cms/templates/js/content-group-editor.underscore
 #: cms/templates/js/course_info_handouts.underscore
@@ -378,7 +390,7 @@ msgstr[0] "%(num_points)s满分（不计入成绩）"
 #: common/lib/xmodule/xmodule/js/src/capa/display.js
 msgid "%(earned)s/%(possible)s point (graded)"
 msgid_plural "%(earned)s/%(possible)s points (graded)"
-msgstr[0] "%(earned)s/%(possible)s得分 (计入成绩)"
+msgstr[0] "%(earned)s/%(possible)s 得分 (计入成绩)"
 
 #. Translators: %(earned)s is the number of points earned. %(possible)s is the
 #. total number of points (examples: 0/1, 1/1, 2/3, 5/10). The total number of
@@ -2207,7 +2219,7 @@ msgstr "格式不正确"
 
 #: common/static/common/js/utils/edx.utils.validate.js
 msgid "%(field)s must have at least %(count)d characters."
-msgstr "%(field)s 至少要有 %(count)d 字符。"
+msgstr "%(field)s至少要有 %(count)d 字符。"
 
 #: common/static/common/js/utils/edx.utils.validate.js
 msgid "%(field)s can only contain up to %(count)d characters."
@@ -3477,6 +3489,31 @@ msgid ""
 " cohorts are disabled. You must enable cohorts for the feature to work."
 msgstr "这门课程为要获取认证证书的学生自动分组，但是群组功能被禁止。为了使该功能正常运行，您必须启用群组功能，"
 
+#: lms/static/js/imgcache-qq-tcplayer-min.js
+#: themes/elitemba-theme/lms/static/js/imgcache-qq-tcplayer-min.js
+msgid "span"
+msgstr ""
+
+#: lms/static/js/imgcache-qq-tcplayer-min.js
+#: themes/elitemba-theme/lms/static/js/imgcache-qq-tcplayer-min.js
+msgid "div"
+msgstr ""
+
+#: lms/static/js/imgcache-qq-tcplayer-min.js
+#: themes/elitemba-theme/lms/static/js/imgcache-qq-tcplayer-min.js
+msgid "p"
+msgstr ""
+
+#: lms/static/js/imgcache-qq-tcplayer-min.js
+#: themes/elitemba-theme/lms/static/js/imgcache-qq-tcplayer-min.js
+msgid "img"
+msgstr ""
+
+#: lms/static/js/imgcache-qq-tcplayer-min.js
+#: themes/elitemba-theme/lms/static/js/imgcache-qq-tcplayer-min.js
+msgid "li"
+msgstr ""
+
 #: lms/static/js/instructor_dashboard/certificates.js
 msgid "Allow students to generate certificates for this course?"
 msgstr "是否允许学生生成该课程证书？"
@@ -3576,7 +3613,6 @@ msgstr "标记选课码为尚未使用的"
 
 #: lms/static/js/instructor_dashboard/membership.js
 #: lms/static/js/student_account/views/account_settings_factory.js
-#: lms/static/js/writable_gradebook.js
 #: openedx/features/learner_profile/static/learner_profile/js/learner_profile_factory.js
 #: cms/templates/js/transcript-organization-credentials.underscore
 #: lms/djangoapps/support/static/support/templates/manage_user.underscore
@@ -4272,11 +4308,6 @@ msgid "Could not override problem score for {user}."
 msgstr "无法覆盖{user}的题目得分。"
 
 #: lms/static/js/student_account/components/PasswordResetConfirmation.jsx
-#: lms/static/js/student_account/views/account_settings_factory.js
-msgid "Reset Your Password"
-msgstr "重置您的密码"
-
-#: lms/static/js/student_account/components/PasswordResetConfirmation.jsx
 msgid "Enter and confirm your new password."
 msgstr "输入并确认新密码"
 
@@ -4295,6 +4326,11 @@ msgstr "两次密码输入不一致"
 #: lms/static/js/student_account/components/PasswordResetConfirmation.jsx
 msgid "Reset My Password"
 msgstr "重置密码"
+
+#: lms/static/js/student_account/components/PasswordResetConfirmation.jsx
+#: lms/static/js/student_account/views/account_settings_factory.js
+msgid "Reset Your Password"
+msgstr "重置您的密码"
 
 #: lms/static/js/student_account/components/PasswordResetInput.jsx
 msgid "Error: "
@@ -4525,8 +4561,16 @@ msgstr "此邮箱地址用于接收来自{platform_name}和课程团队的信息
 
 #: lms/static/js/student_account/views/account_settings_factory.js
 msgid ""
-"You have joined Harvard Learning Camp. Email Modification is not supported."
-msgstr "您参加了“哈佛学习营”，暂不支持修改邮箱。"
+"You have joined Harvard ManageMentor. Email Modification is not supported."
+msgstr "您参加了“哈佛管理导师”，暂不支持修改邮箱。"
+
+#: lms/static/js/student_account/views/account_settings_factory.js
+msgid "Secondary Email Address"
+msgstr "备选邮箱"
+
+#: lms/static/js/student_account/views/account_settings_factory.js
+msgid "You may access your account when single-sign on is not available."
+msgstr "如果单点登录不可用，您可以访问自己的账号。"
 
 #: lms/static/js/student_account/views/account_settings_factory.js
 #: openedx/features/learner_profile/static/learner_profile/js/learner_profile_factory.js
@@ -4611,6 +4655,12 @@ msgstr "出生年份"
 #: openedx/features/learner_profile/static/learner_profile/js/learner_profile_factory.js
 msgid "Preferred Language"
 msgstr "首选语言"
+
+#: lms/static/js/student_account/views/account_settings_factory.js
+msgid ""
+"We've sent a confirmation message to {new_secondary_email_address}. Click "
+"the link in the message to update your secondary email address."
+msgstr "我们已向{new_secondary_email_address}发送了确认消息。 点击邮件中的链接以更新辅助电子邮件地址。"
 
 #: lms/static/js/student_account/views/account_settings_factory.js
 msgid "Social Media Links"
@@ -4929,37 +4979,6 @@ msgstr "KB"
 msgid "MB"
 msgstr "MB"
 
-#: lms/static/js/writable_gradebook.js
-#: lms/templates/commerce/receipt.underscore
-#: lms/templates/verify_student/make_payment_step_ab_testing.underscore
-#: lms/templates/verify_student/payment_confirmation_step.underscore
-msgid "Total"
-msgstr "总计"
-
-#: lms/static/js/writable_gradebook.js
-msgid "The Assignment name is:"
-msgstr "任务名称为："
-
-#: lms/static/js/writable_gradebook.js
-msgid "Publish grades"
-msgstr "发布成绩"
-
-#: lms/static/js/writable_gradebook.js
-msgid "No matching records found"
-msgstr "找不到匹配记录"
-
-#: lms/static/js/writable_gradebook.js
-msgid "Student Name"
-msgstr "学生姓名"
-
-#: lms/static/js/writable_gradebook.js
-msgid "There are no student grades to adjust."
-msgstr "无可调整学生成绩"
-
-#: lms/static/js/writable_gradebook.js
-msgid "Update in progress, please wait..."
-msgstr "正在更新，请稍等"
-
 #: lms/static/lms/js/preview/preview_factory.js
 msgid "Course is not yet visible to students."
 msgstr "该课程尚未对学生公开"
@@ -5107,27 +5126,6 @@ msgstr "成绩"
 msgid "Profile"
 msgstr "个人主页"
 
-#: themes/normal-theme/lms/static/js/binding.js
-#, javascript-format
-msgid "%s s"
-msgstr "%s秒"
-
-#: themes/normal-theme/lms/static/js/binding.js
-msgid "Get the verification code"
-msgstr "获取验证码"
-
-#: themes/normal-theme/lms/static/js/binding.js
-msgid "Cell phone number cannot be blanked"
-msgstr "手机号码不能为空"
-
-#: themes/normal-theme/lms/static/js/binding.js
-msgid "incorrect cellphone number format"
-msgstr "手机号码格式不正确"
-
-#: themes/normal-theme/lms/static/js/binding.js
-msgid "Cellphone number binding successfully"
-msgstr "手机号码绑定成功"
-
 #: cms/static/cms/js/main.js cms/static/js/views/active_video_upload_list.js
 #: cms/static/js/views/video_transcripts.js
 msgid ""
@@ -5150,10 +5148,6 @@ msgstr "该链接将在新浏览器窗口/标签页中打开"
 #: cms/static/js/base.js
 msgid "This link will open in a modal window"
 msgstr "将在模式窗口中打开此链接"
-
-#: cms/static/js/certificates/collections/certificates.js
-msgid "Could not parse certificate JSON. %(message)s"
-msgstr "无法解析证书JSON. %(message)s"
 
 #: cms/static/js/certificates/models/certificate.js
 msgid "Certificate name is required."
@@ -5943,8 +5937,12 @@ msgstr "可见性"
 
 #. Translators: "title" is the name of the current component being edited.
 #: cms/static/js/views/modals/edit_xblock.js
-msgid "Editing: %(title)s"
-msgstr "编辑：%(title)s"
+msgid "Editing: {title}"
+msgstr "正在编辑：{title}"
+
+#: cms/static/js/views/modals/edit_xblock.js
+msgid "Plugins"
+msgstr "插件"
 
 #: cms/static/js/views/modals/edit_xblock.js
 #: lms/templates/ccx/schedule.underscore
@@ -6584,6 +6582,7 @@ msgstr "上一步"
 #: lms/djangoapps/support/static/support/templates/manage_user.underscore
 #: lms/templates/instructor/instructor_dashboard_2/certificate-invalidation.underscore
 #: lms/templates/instructor/instructor_dashboard_2/certificate-white-list.underscore
+#: themes/elitemba-theme/lms/templates/instructor/instructor_dashboard_2/certificate-white-list.underscore
 msgid "Action"
 msgstr "操作"
 
@@ -6991,6 +6990,7 @@ msgstr "课程ID"
 #: lms/djangoapps/support/static/support/templates/certificates_results.underscore
 #: lms/templates/instructor/instructor_dashboard_2/certificate-invalidation.underscore
 #: lms/templates/instructor/instructor_dashboard_2/certificate-white-list.underscore
+#: themes/elitemba-theme/lms/templates/instructor/instructor_dashboard_2/certificate-white-list.underscore
 msgid "No results"
 msgstr "没有结果"
 
@@ -7319,6 +7319,12 @@ msgid "Amount"
 msgstr "金额"
 
 #: lms/templates/commerce/receipt.underscore
+#: lms/templates/verify_student/make_payment_step_ab_testing.underscore
+#: lms/templates/verify_student/payment_confirmation_step.underscore
+msgid "Total"
+msgstr "总计"
+
+#: lms/templates/commerce/receipt.underscore
 #: lms/templates/verify_student/payment_confirmation_step.underscore
 msgid "Please Note"
 msgstr "请注意"
@@ -7433,26 +7439,32 @@ msgid "Click to edit"
 msgstr "点击以编辑"
 
 #: lms/templates/fields/field_order_history.underscore
+#: themes/elitemba-theme/lms/templates/fields/field_order_history.underscore
 msgid "Order Number"
 msgstr "订单号"
 
 #: lms/templates/fields/field_order_history.underscore
+#: themes/elitemba-theme/lms/templates/fields/field_order_history.underscore
 msgid "Date Placed"
 msgstr "已设置日期"
 
 #: lms/templates/fields/field_order_history.underscore
+#: themes/elitemba-theme/lms/templates/fields/field_order_history.underscore
 msgid "Cost"
 msgstr "价格"
 
 #: lms/templates/fields/field_order_history.underscore
+#: themes/elitemba-theme/lms/templates/fields/field_order_history.underscore
 msgid "Order Details"
 msgstr "订单细节"
 
 #: lms/templates/fields/field_order_history.underscore
+#: themes/elitemba-theme/lms/templates/fields/field_order_history.underscore
 msgid "for"
 msgstr "的"
 
 #: lms/templates/fields/field_order_history.underscore
+#: themes/elitemba-theme/lms/templates/fields/field_order_history.underscore
 msgid "Product Name"
 msgstr "产品名称"
 
@@ -7556,6 +7568,7 @@ msgstr "已设定为无效"
 
 #: lms/templates/instructor/instructor_dashboard_2/certificate-invalidation.underscore
 #: lms/templates/instructor/instructor_dashboard_2/certificate-white-list.underscore
+#: themes/elitemba-theme/lms/templates/instructor/instructor_dashboard_2/certificate-white-list.underscore
 msgid "Notes"
 msgstr "笔记"
 
@@ -7582,30 +7595,37 @@ msgid "Free text notes"
 msgstr "自由文本注释"
 
 #: lms/templates/instructor/instructor_dashboard_2/certificate-white-list.underscore
+#: themes/elitemba-theme/lms/templates/instructor/instructor_dashboard_2/certificate-white-list.underscore
 msgid "Generate Exception Certificates"
 msgstr "生成特例证书"
 
 #: lms/templates/instructor/instructor_dashboard_2/certificate-white-list.underscore
+#: themes/elitemba-theme/lms/templates/instructor/instructor_dashboard_2/certificate-white-list.underscore
 msgid "All users on the Exception list who do not yet have a certificate"
 msgstr "特殊处理列表中尚未获得证书的所有用户"
 
 #: lms/templates/instructor/instructor_dashboard_2/certificate-white-list.underscore
+#: themes/elitemba-theme/lms/templates/instructor/instructor_dashboard_2/certificate-white-list.underscore
 msgid "All users on the Exception list"
 msgstr "特殊处理列表中的所有用户"
 
 #: lms/templates/instructor/instructor_dashboard_2/certificate-white-list.underscore
+#: themes/elitemba-theme/lms/templates/instructor/instructor_dashboard_2/certificate-white-list.underscore
 msgid "User Email"
 msgstr "用户电子邮件"
 
 #: lms/templates/instructor/instructor_dashboard_2/certificate-white-list.underscore
+#: themes/elitemba-theme/lms/templates/instructor/instructor_dashboard_2/certificate-white-list.underscore
 msgid "Exception Granted"
 msgstr "特殊处理已批准"
 
 #: lms/templates/instructor/instructor_dashboard_2/certificate-white-list.underscore
+#: themes/elitemba-theme/lms/templates/instructor/instructor_dashboard_2/certificate-white-list.underscore
 msgid "Certificate Generated"
 msgstr "证书已生成"
 
 #: lms/templates/instructor/instructor_dashboard_2/certificate-white-list.underscore
+#: themes/elitemba-theme/lms/templates/instructor/instructor_dashboard_2/certificate-white-list.underscore
 msgid "Remove from List"
 msgstr "从列表中删除"
 
@@ -7864,7 +7884,7 @@ msgstr "挑选一个会话："
 
 #: lms/templates/learner_dashboard/course_enroll.underscore
 msgid "Enroll Now"
-msgstr "现在选课"
+msgstr "现在加入"
 
 #: lms/templates/learner_dashboard/course_enroll.underscore
 msgid "Coming Soon"
@@ -7872,7 +7892,7 @@ msgstr "即将上线"
 
 #: lms/templates/learner_dashboard/course_enroll.underscore
 msgid "Enrollment Opens on"
-msgstr "开放注测"
+msgstr "开放注册"
 
 #: lms/templates/learner_dashboard/course_enroll.underscore
 msgid "Not Currently Available"
@@ -7917,6 +7937,12 @@ msgstr "您尚未注册任何课程。"
 #: lms/templates/learner_dashboard/empty_programs_list.underscore
 msgid "Explore Programs"
 msgstr "发现课程"
+
+#: lms/templates/learner_dashboard/expired_notification.underscore
+msgid ""
+"You enrolled in this course but did not earn the certificate required to "
+"complete this program."
+msgstr "您已注册此课程，但未获得完成此课程所需的证书。"
 
 #: lms/templates/learner_dashboard/explore_new_programs.underscore
 msgid ""
@@ -7990,8 +8016,18 @@ msgid "Congratulations!"
 msgstr "恭喜！"
 
 #: lms/templates/learner_dashboard/program_details_view.underscore
+msgid ""
+"You have successfully completed all the requirements for the {title} {type}."
+msgstr "您已成功完成 {title} {type}专业的所有要求。"
+
+#: lms/templates/learner_dashboard/program_details_view.underscore
 msgid "Your Program Journey"
 msgstr "您的课程学习之旅"
+
+#: lms/templates/learner_dashboard/program_details_view.underscore
+msgid ""
+"Track and plan your progress through the {count} courses in this program."
+msgstr "通过本系列的 {count} 门课程来跟踪和计划你的学习进度。"
 
 #: lms/templates/learner_dashboard/program_details_view.underscore
 msgid ""
@@ -8008,8 +8044,8 @@ msgid "{listPrice}"
 msgstr "{listPrice}"
 
 #: lms/templates/learner_dashboard/program_details_view.underscore
-msgid " {price} {currency} )"
-msgstr "{price} {currency} )"
+msgid "{price})"
+msgstr "{price}）"
 
 #: lms/templates/learner_dashboard/program_details_view.underscore
 msgid "COURSES IN PROGRESS"
@@ -8056,7 +8092,22 @@ msgstr "更改我的电子邮件"
 msgid "Reset Password"
 msgstr "重设密码"
 
+#: lms/templates/student_account/account_recovery.underscore
+msgid "Account Recovery"
+msgstr "验证账户"
+
+#: lms/templates/student_account/account_recovery.underscore
+msgid ""
+"Please enter your secondary email address below and we will send you "
+"instructions for recovering your account and setting a new password."
+msgstr "请在下面输入您的电子邮件以便我们给您发送如何设置新密码的说明。"
+
+#: lms/templates/student_account/account_recovery.underscore
+msgid "Recover my account"
+msgstr "删除我的账号"
+
 #: lms/templates/student_account/account_settings.underscore
+#: themes/elitemba-theme/lms/templates/student_account/account_settings.underscore
 msgid "Account Settings"
 msgstr "账号设置"
 
@@ -8070,6 +8121,7 @@ msgstr "忘记密码？"
 
 #: lms/templates/student_account/hinted_login.underscore
 #: lms/templates/student_account/login.underscore
+#: themes/elitemba-theme/lms/templates/student_account/login.underscore
 msgid "Sign in"
 msgstr "登录"
 
@@ -8109,72 +8161,87 @@ msgid "Register through edX"
 msgstr "通过edX注册"
 
 #: lms/templates/student_account/login.underscore
+#: themes/elitemba-theme/lms/templates/student_account/login.underscore
 msgid "First time here?"
 msgstr "初次使用？"
 
 #: lms/templates/student_account/login.underscore
+#: themes/elitemba-theme/lms/templates/student_account/login.underscore
 msgid "Create an Account."
 msgstr "注册"
 
 #: lms/templates/student_account/login.underscore
+#: themes/elitemba-theme/lms/templates/student_account/login.underscore
 msgid "Sign in to continue learning as {email}"
 msgstr "使用{email}登录，继续学习"
 
 #: lms/templates/student_account/login.underscore
+#: themes/elitemba-theme/lms/templates/student_account/login.underscore
 msgid "Sign in to continue learning"
 msgstr "登录并继续学习"
 
 #: lms/templates/student_account/login.underscore
+#: themes/elitemba-theme/lms/templates/student_account/login.underscore
 msgid ""
 "You already have an EliteMBA account with your {enterprise_name} email "
 "address."
 msgstr "您已使用{enterprise_name}邮箱地址注册EliteMBA账号。"
 
 #: lms/templates/student_account/login.underscore
+#: themes/elitemba-theme/lms/templates/student_account/login.underscore
 msgid ""
 "Going forward, your account information will be updated and maintained by "
 "{enterprise_name}."
 msgstr "下一步，由{enterprise_name}更新并维护您的账号信息。"
 
 #: lms/templates/student_account/login.underscore
+#: themes/elitemba-theme/lms/templates/student_account/login.underscore
 msgid ""
 "You can view your information or unlink from {enterprise_name} anytime in "
 "your Account Settings."
 msgstr "您可在账号设置中，随时查看账号信息或与{enterprise_name}解绑。"
 
 #: lms/templates/student_account/login.underscore
+#: themes/elitemba-theme/lms/templates/student_account/login.underscore
 msgid "To continue learning with this account, sign in below."
 msgstr "如需继续使用此账号学习，请点击以下按钮登录。"
 
 #: lms/templates/student_account/login.underscore
+#: themes/elitemba-theme/lms/templates/student_account/login.underscore
 msgid "Sign In"
 msgstr "登录"
 
 #: lms/templates/student_account/login.underscore
+#: themes/elitemba-theme/lms/templates/student_account/login.underscore
 msgid ""
 "Sign in here using your email address and password, or use one of the "
 "providers listed below."
 msgstr "使用您的电子邮件和密码或使用以下列出的一个方式在此处登录。"
 
 #: lms/templates/student_account/login.underscore
+#: themes/elitemba-theme/lms/templates/student_account/login.underscore
 msgid "Sign in here using your email address and password."
 msgstr "在这里使用您的电子邮件和密码登录。"
 
 #: lms/templates/student_account/login.underscore
+#: themes/elitemba-theme/lms/templates/student_account/login.underscore
 msgid "If you do not yet have an account, use the button below to register."
 msgstr "如果您尚无账号，请使用以下按钮进行注册。"
 
 #: lms/templates/student_account/login.underscore
+#: themes/elitemba-theme/lms/templates/student_account/login.underscore
 msgid "or sign in with"
 msgstr "或者通过以下方式登录"
 
 #: lms/templates/student_account/login.underscore
+#: themes/elitemba-theme/lms/templates/student_account/login.underscore
 #, python-format
 msgid "Sign in with %(providerName)s"
 msgstr "使用 %(providerName)s 登录"
 
 #: lms/templates/student_account/login.underscore
 #: lms/templates/student_account/register.underscore
+#: themes/elitemba-theme/lms/templates/student_account/login.underscore
 msgid "Use my institution/campus credentials"
 msgstr "使用我的机构/校园账号"
 
@@ -9263,7 +9330,7 @@ msgstr "监考下的测试"
 
 #: cms/templates/js/course-outline.underscore
 msgid "Timed Exam"
-msgstr "计时测验"
+msgstr ""
 
 #: cms/templates/js/course-outline.underscore
 #: cms/templates/js/xblock-outline.underscore
@@ -9274,6 +9341,10 @@ msgstr "折叠／扩展该%(xblock_type)s"
 #: cms/templates/js/course-outline.underscore
 msgid "Display Name"
 msgstr "显示名称"
+
+#: cms/templates/js/course-outline.underscore
+msgid "Proctoring Settings"
+msgstr "监考设置"
 
 #: cms/templates/js/course-outline.underscore
 msgid "Configure"
@@ -9954,6 +10025,10 @@ msgid ""
 " when they submit answers to assessments."
 msgstr "如果节不设有截止日期，那么只要学员提交答案至评分，就可以查看自己的得分。"
 
+#: cms/templates/js/show-textbook.underscore
+msgid "PDF Chapters"
+msgstr "PDF各章节"
+
 #: cms/templates/js/signatory-details.underscore
 #: cms/templates/js/signatory-editor.underscore
 msgid "Signatory"
@@ -10411,7 +10486,7 @@ msgid "Use Current Transcript"
 msgstr "使用当前字幕"
 
 #: membership/static/membership/js/card.js
-msgid "Open membership"
+msgid "Join"
 msgstr "开通"
 
 #: membership/static/membership/js/card.js
@@ -10423,23 +10498,19 @@ msgid "YYYY-MM-DD"
 msgstr "YYYY-MM-DD"
 
 #: membership/static/membership/js/card.js
-msgid "Open date:"
+msgid "Open date: "
 msgstr "开通日期："
 
 #: membership/static/membership/js/card.js
-msgid "Expire:"
+msgid "Expire: "
 msgstr "到期日期："
-
-#: membership/static/membership/js/card.js
-msgid "Last open date:"
-msgstr "上次开通日期："
 
 #: membership/static/membership/js/card.js
 msgid "Renew"
 msgstr "续费"
 
 #: membership/static/membership/js/index.js
-msgid "Average per month"
+msgid "/M"
 msgstr "月均"
 
 #: membership/static/membership/js/pay.js
@@ -10450,3 +10521,28 @@ msgstr "调起支付失败"
 #, javascript-format
 msgid "Return to EliteMBA in %s seconds"
 msgstr "%s 秒后返回英荔商学院"
+
+#: themes/elitemba-theme/lms/static/js/binding.js
+#, javascript-format
+msgid "%s s"
+msgstr "%s秒"
+
+#: themes/elitemba-theme/lms/static/js/binding.js
+msgid "Get the verification code"
+msgstr "获取验证码"
+
+#: themes/elitemba-theme/lms/static/js/binding.js
+msgid "Cell phone number cannot be blanked"
+msgstr "手机号码不能为空"
+
+#: themes/elitemba-theme/lms/static/js/binding.js
+msgid "incorrect cellphone number format"
+msgstr "手机号码格式不正确"
+
+#: themes/elitemba-theme/lms/static/js/binding.js
+msgid "Cellphone number binding successfully"
+msgstr "手机号码绑定成功"
+
+#: themes/elitemba-theme/lms/templates/instructor/instructor_dashboard_2/certificate-white-list.underscore
+msgid "Certificate exceptions group selection"
+msgstr "选择群体"

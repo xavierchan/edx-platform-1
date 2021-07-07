@@ -2,7 +2,6 @@
 <%!
 import json
 from django.utils.translation import ugettext as _
-from django.conf import settings
 
 from openedx.core.djangolib.markup import HTML, Text
 from lms.djangoapps.verify_student.views import PayAndVerifyView
@@ -98,7 +97,6 @@ from lms.djangoapps.verify_student.views import PayAndVerifyView
     ></div>
 
     % if is_active:
-    % if settings.SHOW_VERIFY_STUDENT_SUPPORT:
     ## Support
     <div class="wrapper-content-supplementary">
       <aside class="content-supplementary">
@@ -120,7 +118,6 @@ from lms.djangoapps.verify_student.views import PayAndVerifyView
           </ul>
         </aside>
     </div>
-    % endif
     % endif
 
   </section>

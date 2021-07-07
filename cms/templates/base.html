@@ -9,7 +9,6 @@
 <%namespace name='static' file='static_content.html'/>
 <%!
 from django.utils.translation import ugettext as _
-from django.conf import settings
 
 from openedx.core.djangoapps.util.user_messages import PageLevelMessages
 from openedx.core.djangolib.js_utils import (
@@ -41,15 +40,6 @@ from openedx.core.release import RELEASE_LINE
     <%
       jsi18n_path = "js/i18n/{language}/djangojs.js".format(language=LANGUAGE_CODE)
     %>
-
-    <% sentry_dsn_frontend = getattr(settings, 'SENTRY_DSN_FRONTEND', '') %>
-    % if sentry_dsn_frontend:
-        <script src="https://browser.sentry-cdn.com/4.4.2/bundle.min.js" crossorigin="anonymous"></script>
-        <script type="text/javascript">
-            // Sentry Settings
-            Sentry.init({ dsn: '${sentry_dsn_frontend}' });
-        </script>
-    % endif
 
     % if getattr(settings, 'CAPTURE_CONSOLE_LOG', False):
         <script type="text/javascript">
@@ -85,19 +75,6 @@ from openedx.core.release import RELEASE_LINE
     <%include file="widgets/segment-io.html" />
 
     <%block name="header_extras"></%block>
-
-    <% ga_acct = getattr(settings, 'GOOGLE_ANALYTICS_ACCOUNT', None) %>
-    <!-- Google Analytics -->
-    <script>
-    (function(i,s,o,g,r,a,m){i['GoogleAnalyticsObject']=r;i[r]=i[r]||function(){
-    (i[r].q=i[r].q||[]).push(arguments)},i[r].l=1*new Date();a=s.createElement(o),
-    m=s.getElementsByTagName(o)[0];a.async=1;a.src=g;m.parentNode.insertBefore(a,m)
-    })(window,document,'script','https://www.google-analytics.com/analytics.js','ga');
-
-    ga('create', '${ga_acct}', 'auto');
-    ga('send', 'pageview');
-    </script>
-    <!-- End Google Analytics --> 
   </head>
 
   <body class="${static.dir_rtl()} <%block name='bodyclass'></%block> lang_${LANGUAGE_CODE}">

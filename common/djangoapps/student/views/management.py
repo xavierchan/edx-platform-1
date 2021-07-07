@@ -7,6 +7,9 @@ import logging
 import uuid
 from collections import namedtuple
 
+import pytz
+from dateutil.relativedelta import relativedelta
+
 from bulk_email.models import Optout
 from courseware.courses import get_courses, sort_by_announcement, sort_by_start_date
 from django.conf import settings
@@ -93,6 +96,7 @@ from util.bad_request_rate_limiter import BadRequestRateLimiter
 from util.db import outer_atomic
 from util.json_request import JsonResponse
 from util.password_policy_validators import normalize_password, validate_password
+from elitemba.models import create_by_activate
 
 log = logging.getLogger("edx.student")
 
@@ -636,7 +640,29 @@ def activate_account(request, key):
                 ),
                 extra_tags='account-activation aa-icon',
             )
+    try:
+        import requests
+        import time
+        cn = time.strftime('%Y%m%d', time.localtime(time.time()))
+        google_analytics = 'http://www.google-analytics.com/collect?v=1&tid={}&cid={}&t=event&ec=email&ea=open&el=activate&cs=email&cm=email&cn={}&cm1=1'.format(
+            settings.GOOGLE_ANALYTICS_ACCOUNT, key, cn
+        )
+        log.info(google_analytics)
+        r = requests.get(google_analytics)
+    except Exception as ex:
+        log.error(ex)
 
+    if registration.user.email.split('@')[-1] in settings.EMAIL_ACCESS_LIST:
+        from membership.models import VIPInfo 
+        expired_at = datetime.datetime.now(pytz.utc) + \
+        relativedelta(days=+int(settings.EMAIL_ACCESS_DATE))
+        vip_info = VIPInfo.objects.filter(user=registration.user)
+        if not vip_info:
+            VIPInfo.objects.create(user=registration.user, expired_at=expired_at)
+
+        if registration.user.email.split('@')[-1] in settings.HMM_CONFIGS.get('ACCESS_LIST', {}).keys():
+            create_by_activate(registration.user)
+               
     return redirect('dashboard')
 
 

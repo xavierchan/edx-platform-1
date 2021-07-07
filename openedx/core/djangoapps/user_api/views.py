@@ -1,5 +1,10 @@
 """HTTP end-points for the User API. """
 
+import pytz
+import datetime
+from ipware.ip import get_ip
+from eventtracking import tracker as eventtracker
+
 from django.contrib.auth.models import User
 from django.core.exceptions import NON_FIELD_ERRORS, PermissionDenied, ValidationError
 from django.db import transaction
@@ -152,6 +157,7 @@ class RegistrationView(APIView):
 
         try:
             user = create_account_with_params(request, data)
+            self.track_create_user(request, user, request.META['PATH_INFO'])
         except AccountValidationError as err:
             errors = {
                 err.field: [{"user_message": text_type(err)}]
@@ -178,6 +184,46 @@ class RegistrationView(APIView):
     def dispatch(self, request, *args, **kwargs):
         return super(RegistrationView, self).dispatch(request, *args, **kwargs)
 
+    def track_create_user(self, request, user, event_type, page=None):
+        """tracking register user create success"""
+        data = {
+            "username": user.username,
+            "user_id": user.id,
+            "ip": self._get_request_ip(request),
+            "referer": self._get_request_header(request, 'HTTP_REFERER'),
+            "accept_language": self._get_request_header(request, 'HTTP_ACCEPT_LANGUAGE'),
+            "event_source": "server",
+            "event_type": event_type,
+            "agent": self._get_request_header(request, 'HTTP_USER_AGENT').decode('latin1'),
+            "page": page,
+            "time": datetime.datetime.utcnow().replace(tzinfo=pytz.utc),
+            "host": self._get_request_header(request, 'SERVER_NAME'),
+            "context": eventtracker.get_tracker().resolve_context(),
+        }
+
+        context = {
+            "username": user.username,
+        }
+
+        with eventtracker.get_tracker().context('eliteumba.register.info', context):
+            eventtracker.emit(name='eliteumba.register.info', data=data)
+
+     
+    def _get_request_header(self, request, header_name, default=''):
+        """Helper method to get header values from a request's META dict, if present."""
+        if request is not None and hasattr(request, 'META') and header_name in request.META:
+            return request.META[header_name]
+        else:
+            return default
+
+
+    def _get_request_ip(self, request, default=''):
+        """Helper method to get IP from a request's META dict, if present."""
+        if request is not None and hasattr(request, 'META'):
+            return get_ip(request)
+        else:
+            return default 
+    
 
 class PasswordResetView(APIView):
     """HTTP end-point for GETting a description of the password reset form. """

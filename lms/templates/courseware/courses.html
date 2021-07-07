@@ -1,8 +1,7 @@
-<%page expression_filter="h"/>
 <%!
   import json
   from django.utils.translation import ugettext as _
-  from openedx.core.djangolib.js_utils import js_escaped_string, dump_js_escaped_json
+  from openedx.core.djangolib.js_utils import dump_js_escaped_json
 %>
 <%inherit file="../main.html" />
 <%
@@ -18,26 +17,12 @@
       <%static:include path="discovery/${template_name}.underscore" />
   </script>
   % endfor
-
-  % if user_language:
-    <% user_language_or_default = user_language %>
-  % else:
-    <% user_language_or_default = settings.LANGUAGE_CODE %>
-  % endif
-
-  % if user_timezone:
-    <% user_timezone_or_default = user_timezone %>
-  % else:
-    <% user_timezone_or_default = settings.TIME_ZONE%>
-  % endif
-
   <%static:require_module module_name="js/discovery/discovery_factory" class_name="DiscoveryFactory">
     DiscoveryFactory(
       ${course_discovery_meanings | n, dump_js_escaped_json},
       getParameterByName('search_query'),
-      "${user_language_or_default}",
-      "${user_timezone_or_default}"
-
+      "${user_language}",
+      "${user_timezone}"
     );
   </%static:require_module>
 </%block>
@@ -71,20 +56,20 @@
         % endif
 
         <div class="courses${'' if course_discovery_enabled else ' no-course-discovery'}" role="region" aria-label="${_('List of Courses')}">
-          <!-- <ul class="courses-listing journal-list">
+          <ul class="courses-listing journal-list">
             % for bundle in journal_info.get('journal_bundles'):
             <li class="courses-listing-item">
               <%include file="../journals/bundle_card.html" args="bundle=bundle" />
             </li>
             % endfor
           </ul>
-          <ul class="journal-list">
+          <ul class="courses-listing journal-list">
             %for journal in journal_info.get('journals'):
             <li class="courses-listing-item">
               <%include file="../journals/journal_card.html" args="journal=journal" />
             </li>
             %endfor
-          </ul> -->
+          </ul>
           <ul class="courses-listing courses-list">
             %for course in courses:
             <li class="courses-listing-item">
@@ -102,7 +87,7 @@
           </section>
         </aside>
         % endif
-        <input type="hidden" value="${vip_course_price_data}">
+
       </section>
     </section>
 </main>

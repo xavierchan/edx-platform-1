@@ -199,7 +199,8 @@ class CourseCardModel extends Backbone.Model {
       if (isEnrolled && courseRun.course_url) {
         courseTitleLink = courseRun.course_url;
       } else if (!isEnrolled && courseRun.marketing_url) {
-        courseTitleLink = CourseCardModel.updateMarketingUrl(courseRun);
+        // courseTitleLink = CourseCardModel.updateMarketingUrl(courseRun);
+        courseTitleLink = courseRun.course_url;
       }
       this.set({
         certificate_url: courseRun.certificate_url,

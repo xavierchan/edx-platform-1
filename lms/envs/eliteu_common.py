@@ -34,10 +34,8 @@ FEATURES.update({
 })
 
 MEMBERSHIP_ROOT = REPO_ROOT / "../edx-membership"
-PAYMENTS_ROOT = REPO_ROOT / "../eliteu-payments"
 
 sys.path.append(MEMBERSHIP_ROOT)
-sys.path.append(PAYMENTS_ROOT)
 
 OAUTH2_PROVIDER.update({
     'ACCESS_TOKEN_EXPIRE_SECONDS': 60 * 60 * 24 * 365,
@@ -237,105 +235,6 @@ COUNTRIES_OVERRIDE = {
     'XK': _('Kosovo'),
 }
 
-############################ WECHAT_APP_PAY #########################
-WECHAT_APP_PAY_INFO = {
-    "basic_info": {
-        "APPID": "",
-        "APPSECRET": "",
-        "MCHID": "",
-        "KEY": "",
-        "ACCESS_TOKEN": ""
-    },
-    "other_info": {
-        "BUY_COURSES_SUCCESS_TEMPLATE_ID": "",
-        "BUY_COURSES_SUCCESS_HREF_URL": "",
-        "COIN_SUCCESS_TEMPLATE_ID": "",
-        "COIN_SUCCESS_HREF_URL": "",
-        "SERVICE_TEL": "",
-        "NOTIFY_URL": "",
-        "JS_API_CALL_URL": "",
-        "SSLCERT_PATH": "",
-        "SSLKEY_PATH": ""
-    }
-}
-
-############################ WECHAT_PAY #########################
-WECHAT_PAY_INFO = {
-    "basic_info": {
-        "APPID": "",
-        "APPSECRET": "",
-        "MCHID": "",
-        "KEY": "",
-        "ACCESS_TOKEN": ""
-    },
-    "other_info": {
-        "BUY_COURSES_SUCCESS_TEMPLATE_ID": "",
-        "BUY_COURSES_SUCCESS_HREF_URL": "",
-        "COIN_SUCCESS_TEMPLATE_ID": "",
-        "COIN_SUCCESS_HREF_URL": "",
-        "SERVICE_TEL": "",
-        "NOTIFY_URL": "",
-        "JS_API_CALL_URL": "",
-        "SSLCERT_PATH": "",
-        "SSLKEY_PATH": ""
-    }
-}
-
-############################ WECHAT H5 PAY #########################
-WECHAT_H5_PAY_INFO = {
-    "basic_info": {
-        "APPID": "",
-        "APPSECRET": "",
-        "MCHID": "",
-        "KEY": "",
-        "ACCESS_TOKEN": ""
-    },
-    "other_info": {
-        "SERVICE_TEL": "",
-        "NOTIFY_URL": "",
-        "JS_API_CALL_URL": "",
-        "SSLCERT_PATH": "",
-        "SSLKEY_PATH": "",
-        "SPBILL_CREATE_IP": ""
-    }
-}
-
-############################ ALIPAY_INFO #########################
-ALIPAY_APP_INFO = {
-    "basic_info": {
-        "APP_ID": "",
-        "APP_PRIVATE_KEY": "",
-        "ALIPAY_RSA_PUBLIC_KEY": ""
-    },
-    "other_info": {
-        "SIGN_TYPE": "",
-        "NOTIFY_URL": ""
-    }
-}
-
-############################ ALIPAY_INFO #########################
-ALIPAY_INFO = {
-    'basic_info': {
-        "KEY": "",
-        "PARTNER": "",
-        "SELLER_EMAIL": ""
-    },
-    'other_info': {
-        "INPUT_CHARSET": "",
-        "INPUT_DIRECT_CHARSET": "",
-        "SIGN_TYPE": "",
-        "RETURN_URL": "",
-        "NOTIFY_URL": "",
-        "REFUND_NOTIFY_URL": "",
-        "SHOW_URL": "",
-        "ERROR_NOTIFY_URL": "",
-        "TRANSPORT": "",
-        "DEFAULT_BANK": "",
-        "IT_B_PAY": "",
-        "REFUND_URL": ""
-    }
-}
-
 ACCOUNT_VISIBILITY_CONFIGURATION = {
     # Default visibility level for accounts without a specified value
     # The value is one of: 'all_users', 'private'
@@ -449,21 +348,5 @@ MOBILE_APP_USER_AGENT_REGEXES = ENV_TOKENS.get('MOBILE_APP_USER_AGENT_REGEXES', 
 # Baidu Bridge
 BAIDU_BRIDGE_URL = ENV_TOKENS.get('BAIDU_BRIDGE_URL', '')
 
-# elitemba
-import imp
-
-HMM_ENABLED = ENV_FEATURES.get('HMM_ENABLED', False)
-try:
-    if HMM_ENABLED:
-        fp, elitemba_path, desc = imp.find_module('elitemba')
-        INSTALLED_APPS.append('elitemba')
-        MIDDLEWARE_CLASSES.append('elitemba.middleware.ElitembaDataMiddleware')
-        HMM_CONFIGS = ENV_FEATURES.get('HMM_CONFIGS', {
-            'HOST': 'https://openapi.myhbp.org.cn',
-            'APP_ID': '',
-            'SOURCE_ID': '',
-            'LHOST': 'https://myhbp.org.cn',
-        })
-except ImportError:
-    HMM_ENABLED = False
-    print "Warnning: missing package 'elitemba'"
+############### Settings for AES Encryption/Decryption  ##################
+AES_KEY = AUTH_TOKENS.get('AES_KEY', '')

@@ -153,17 +153,25 @@ third_party:
 segment:
     django-partial.po:          # This .po file..
         django-studio.po:       #  produces this .po file..
-            - cms/*             #   by segregating strings from these files.
+            - cms/*             #   by segregating strings from these files.    
+        django-theme.po:
+            - themes/*
         # Anything that doesn't match a pattern stays in the original file.
     djangojs-partial.po:
         djangojs-studio.po:
             - cms/*
+        djangojs-theme.po:
+            - themes/*
     mako.po:
         mako-studio.po:
             - cms/*
+        mako-theme.po:
+            - themes/*
     underscore.po:
         underscore-studio.po:
             - cms/*
+        underscore-theme.po:
+            - themes/*
 
 # How should the generate step merge files?
 generate_merge:
@@ -175,9 +183,13 @@ generate_merge:
         - wiki.po
         - membership.po
         - eliteu.po
+        - django-theme.po
+        - mako-theme.po
     djangojs.po:
         - djangojs-partial.po
         - djangojs-studio.po
         - underscore.po
         - underscore-studio.po
         - membership-js.po
+        - djangojs-theme.po
+        - underscore-theme.po

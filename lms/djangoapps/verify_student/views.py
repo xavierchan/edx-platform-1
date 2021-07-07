@@ -913,7 +913,7 @@ class SubmitPhotosView(View):
             return response
 
         # Submit the attempt
-        self._submit_attempt(request.user, face_image, photo_id_image, initial_verification)
+        attempt = self._submit_attempt(request.user, face_image, photo_id_image, initial_verification)
 
         self._fire_event(request.user, "edx.bi.verify.submitted", {"category": "verification"})
         self._send_confirmation_email(request.user)

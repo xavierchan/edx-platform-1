@@ -67,8 +67,8 @@ export class StudentAccountDeletion extends React.Component {
     const changeAcctInfoText = StringUtils.interpolate(
       gettext('{htmlStart}Want to change your email, name, or password instead?{htmlEnd}'),
       {
-        htmlStart: '',
-        htmlEnd: '',
+        htmlStart: '<a href="/manual" target="_blank">',
+        htmlEnd: '</a>',
       },
     );
 

@@ -155,7 +155,7 @@ def send_short_message_by_linkgroup(destnumbers, msg, sendtime='', channel=1):
         :param Cell: 扩展号(必须是数字或为空)。
         :param channel: 1-签名【E-ducation】。
         :return: 实际需返回是否发送成功/失败，以及原因
-        """
+    """
     CorpID = settings.SMS_API_BY_LINKGROUP['normal_auth']['userid']  # 账号
     Pwd = settings.SMS_API_BY_LINKGROUP['normal_auth']['password']  # 密码
     Mobile = destnumbers

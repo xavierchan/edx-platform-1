@@ -118,8 +118,7 @@
           width: flex-grid(12);
 
           > a.find-courses, a.register, a.add-to-cart {
-            // add theme style
-            @include button(flat, $button-color);
+            @include button(shiny, $button-color);
             @include box-sizing(border-box);
 
             border-radius: 3px;
@@ -146,8 +145,7 @@
           }
 
           strong {
-            // add theme style
-            @include button(flat, $button-color);
+            @include button(shiny, $button-color);
             @include box-sizing(border-box);
 
             border-radius: 3px;

@@ -21,7 +21,7 @@ from django.urls import reverse
 from django.utils.decorators import method_decorator
 from django.utils.http import urlquote_plus
 from django.utils.text import slugify
-from django.utils.translation import ugettext as _
+from django.utils.translation import ugettext_lazy as _
 from django.views.decorators.cache import cache_control
 from django.views.decorators.clickjacking import xframe_options_exempt
 from django.views.decorators.csrf import ensure_csrf_cookie
@@ -76,7 +76,7 @@ from lms.djangoapps.grades.course_grade_factory import CourseGradeFactory
 from lms.djangoapps.instructor.enrollment import uses_shib
 from lms.djangoapps.instructor.views.api import require_global_staff
 from lms.djangoapps.verify_student.services import IDVerificationService
-from openedx.core.djangoapps.catalog.utils import get_programs, get_programs_with_type
+from openedx.core.djangoapps.catalog.utils import get_programs, get_programs_with_type, get_program_extend
 from openedx.core.djangoapps.certificates import api as auto_certs_api
 from openedx.core.djangoapps.content.course_overviews.models import CourseOverview
 from openedx.core.djangoapps.credit.api import (
@@ -956,6 +956,10 @@ def program_marketing(request, program_uuid):
     program['type_slug'] = slugify(program['type'])
     skus = program.get('skus')
     ecommerce_service = EcommerceService()
+
+    # Program Extend    
+    program_extend = get_program_extend(program_uuid)
+    program['tencent_video'] = program_extend['video'] if isinstance(program_extend, dict) else ''
 
     context = {'program': program}
 

@@ -326,6 +326,28 @@ class AccountViewSet(ViewSet):
             with transaction.atomic():
                 update_account_settings(request.user, request.data, username=username)
                 account_settings = get_account_settings(request, [username])[0]
+
+            # Update VIP info for elite
+            if settings.FEATURES.get('ENABLE_MEMBERSHIP_INTEGRATION'):
+                NOT_PURCHASED = 1
+                BOUGHT = 2
+                EXPIRED = 3
+                try:
+                    from membership.models import VIPInfo
+                    vip_info = VIPInfo.get_vip_info_for_mobile(request.user)
+                    vip_info_emb = {}
+                    if vip_info['is_vip']:
+                        vip_info_emb['vip_status'] = BOUGHT
+                    else:
+                        if VIPInfo.get_vipinfo_for_user(request.user):
+                            vip_info_emb['vip_status'] = EXPIRED
+                        else:
+                            vip_info_emb['vip_status'] = NOT_PURCHASED
+                    vip_info_emb['vip_remain_days'] = vip_info['vip_remain_days']
+                    account_settings.update(vip_info_emb)
+                except Exception as exc:
+                    log.exception('Unable to get user:{} VIP info'.format(request.user.username))
+            
         except UserNotAuthorized:
             return Response(status=status.HTTP_403_FORBIDDEN if request.user.is_staff else status.HTTP_404_NOT_FOUND)
         except UserNotFound:

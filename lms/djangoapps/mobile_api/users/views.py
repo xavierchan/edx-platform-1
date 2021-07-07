@@ -1,10 +1,22 @@
+# -*- coding:utf-8 -*-
 """
 Views for user API
 """
 
 import json
+import logging
+
+from edx_ace import ace
+from edx_ace.recipient import Recipient
+
+from six import iteritems, text_type
 from django.shortcuts import redirect
 from django.utils import dateparse
+from django.contrib.sites.models import Site
+from django.contrib.auth import authenticate, get_user_model, logout
+from django.db import transaction
+from django.utils.translation import ugettext as _
+
 from opaque_keys import InvalidKeyError
 from opaque_keys.edx.keys import UsageKey
 from rest_framework import generics, views
@@ -22,13 +34,33 @@ from experiments.models import ExperimentData, ExperimentKeyValue
 from lms.djangoapps.courseware.access_utils import ACCESS_GRANTED
 from mobile_api.utils import API_V05
 from openedx.features.course_duration_limits.access import check_course_expired
-from student.models import CourseEnrollment, User
+from openedx.core.djangoapps.user_api.models import (
+    RetirementState,
+    RetirementStateError,
+    UserOrgTag,
+    UserRetirementPartnerReportingStatus,
+    UserRetirementStatus
+)
+from openedx.core.djangoapps.user_api.accounts.views import _set_unusable_password
+from openedx.core.djangoapps.user_api.message_types import DeletionNotificationMessage
+from openedx.core.djangolib.oauth2_retirement_utils import retire_dot_oauth2_models, retire_dop_oauth2_models
+from openedx.core.djangoapps.ace_common.template_context import get_base_template_context
+from openedx.core.djangoapps.user_authn.exceptions import AuthFailedError
+
+from student.models import CourseEnrollment, User, get_retired_email_by_email, Registration, LoginFailures
 from xmodule.modulestore.django import modulestore
 from xmodule.modulestore.exceptions import ItemNotFoundError
+
+from rest_framework import permissions, status
 
 from .. import errors
 from ..decorators import mobile_course_access, mobile_view
 from .serializers import CourseEnrollmentSerializer, CourseEnrollmentSerializerv05, UserSerializer
+
+from social_django.models import UserSocialAuth
+
+
+log = logging.getLogger(__name__)
 
 
 @mobile_view(is_user=True)
@@ -378,3 +410,130 @@ def my_user_info(request, api_version):
     Redirect to the currently-logged-in user's info page
     """
     return redirect("user-detail", api_version=api_version, username=request.user.username)
+
+
+@mobile_view(is_user=True)
+class UserDeactivateLogoutView(views.APIView):
+    """
+        POST /api/mobile/v1/users/{username}/deactivate_logout/
+        
+    """ 
+    http_method_names = ["post",]
+    permission_classes = (permissions.IsAuthenticated,)
+
+    def post(self, request, *args, **kwargs):
+        """
+        POST /api/mobile/v1/users/{username}/deactivate_logout/
+
+        Marks the user as having no password set for deactivation purposes,
+        and logs te user out.
+        """    
+        user_model = get_user_model()
+        try:
+            # Get the username from the request and check that it exists
+            verify_user_password_response = self._verify_user_password(request)
+            if verify_user_password_response.status_code != status.HTTP_204_NO_CONTENT:
+                return Response(
+                    data={
+                        'msg': "密码异常",
+                        'code': status.HTTP_403_FORBIDDEN
+                    })
+            with transaction.atomic():
+                UserRetirementStatus.create_retirement(request.user)
+                # Unlink LMS social auth accounts
+                UserSocialAuth.objects.filter(user_id=request.user.id).delete()
+                # Change LMS password & email
+                user_email = request.user.email
+                request.user.email = get_retired_email_by_email(request.user.email)
+                request.user.save()
+                _set_unusable_password(request.user)
+                # TODO: Unlink social accounts & change password on each IDA.
+                # Remove the activation keys sent by email to the user for account activation.
+                Registration.objects.filter(user=request.user).delete()
+                # Add user to retirement queue.
+                # Delete OAuth tokens associated with the user.
+                retire_dop_oauth2_models(request.user)
+                retire_dot_oauth2_models(request.user)
+
+                try:
+                    # Send notification email to user
+                    site = Site.objects.get_current()
+                    notification_context = get_base_template_context(site)
+                    notification_context.update({'full_name': request.user.profile.name})
+                    notification = DeletionNotificationMessage().personalize(
+                        recipient=Recipient(username='', email_address=user_email),
+                        language=request.user.profile.language,
+                        user_context=notification_context,
+                    )
+                    ace.send(notification)
+                except Exception as exc:
+                    log.exception('Error sending out deletion notification email')
+                    raise
+
+                # Log the user out.
+                # TODO app获取接口成功后 退出登录，和WEB端不一样
+                #logout(request)
+            return Response(
+                data={
+                    'msg': _('操作成功'),
+                    'code': status.HTTP_204_NO_CONTENT
+                })
+        except KeyError:
+            return Response(
+                data={
+                    'msg': _('Username not specified.'),
+                    'code': status.HTTP_404_NOT_FOUND
+                })
+        except user_model.DoesNotExist:
+            return Response(
+                data={
+                    'msg': u'The user "{}" does not exist.'.format(request.user.username),
+                    'code': status.HTTP_404_NOT_FOUND
+                })
+        except Exception as exc:  # pylint: disable=broad-except
+            return Response(
+                data={
+                    'msg': text_type(exc),
+                    'code': status.HTTP_500_INTERNAL_SERVER_ERROR
+                })
+
+    def _verify_user_password(self, request):
+        """
+        If the user is logged in and we want to verify that they have submitted the correct password
+        for a major account change (for example, retiring this user's account).
+
+        Args:
+            request (HttpRequest): A request object where the password should be included in the POST fields.
+        """
+        try:
+            self._check_excessive_login_attempts(request.user)
+            user = authenticate(username=request.user.username, password=request.POST['password'], request=request)
+            if user:
+                if LoginFailures.is_feature_enabled():
+                    LoginFailures.clear_lockout_counter(user)
+                return Response(status=status.HTTP_204_NO_CONTENT)
+            else:
+                self._handle_failed_authentication(request.user)
+        except AuthFailedError as err:
+            return Response(text_type(err), status=status.HTTP_403_FORBIDDEN)
+        except Exception as err:  # pylint: disable=broad-except
+            return Response(u"Could not verify user password: {}".format(err), status=status.HTTP_400_BAD_REQUEST)
+
+    def _check_excessive_login_attempts(self, user):
+        """
+        See if account has been locked out due to excessive login failures
+        """
+        if user and LoginFailures.is_feature_enabled():
+            if LoginFailures.is_user_locked_out(user):
+                raise AuthFailedError(_('Due to multiple login failures, the account is temporarily locked.'
+                                        ' Please try again after 15 minutes.'))
+
+    def _handle_failed_authentication(self, user):
+        """
+        Handles updating the failed login count, inactive user notifications, and logging failed authentications.
+        """
+        if user and LoginFailures.is_feature_enabled():
+            LoginFailures.increment_lockout_counter(user)
+
+        raise AuthFailedError(_('Email or password is incorrect.'))
+

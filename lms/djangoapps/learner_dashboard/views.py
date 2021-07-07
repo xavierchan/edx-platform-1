@@ -6,6 +6,7 @@ from edxmako.shortcuts import render_to_response
 
 from lms.djangoapps.learner_dashboard.programs import ProgramsFragmentView, ProgramDetailsFragmentView
 from openedx.core.djangoapps.programs.models import ProgramsApiConfig
+from openedx.core.djangoapps.catalog.utils import get_programs
 from openedx.features.journals.api import journals_enabled
 
 
@@ -33,12 +34,14 @@ def program_listing(request):
 @require_GET
 def program_details(request, program_uuid):
     """View details about a specific program."""
+    program_data = get_programs(request.site, uuid=program_uuid)
     programs_config = ProgramsApiConfig.current()
     program_fragment = ProgramDetailsFragmentView().render_to_fragment(
         request, program_uuid, programs_config=programs_config
     )
-
+    
     context = {
+        'program_title': program_data['title'],
         'program_fragment': program_fragment,
         'show_program_listing': programs_config.enabled,
         'show_dashboard_tabs': True,
